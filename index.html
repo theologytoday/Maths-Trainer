@@ -591,18 +591,18 @@
   // ---------- diagrams ----------
   function rectSVG(w,h){
     var maxPx=170, scale=maxPx/Math.max(w,h);
-    var pw=w*scale, ph=h*scale, x=40, y=24;
-    var vbW=pw+80, vbH=ph+56;
+    var pw=w*scale, ph=h*scale, x=58, y=24;
+    var vbW=pw+x+40, vbH=ph+56;
     return '<svg viewBox="0 0 '+vbW+' '+vbH+'" class="q-diagram" role="img" aria-label="Rectangle '+w+' by '+h+'">'+
       '<rect x="'+x+'" y="'+y+'" width="'+pw+'" height="'+ph+'" class="diagram-shape"/>'+
       '<text x="'+(x+pw/2)+'" y="'+(y-9)+'" text-anchor="middle" class="diagram-label">'+w+' cm</text>'+
-      '<text x="'+(x-10)+'" y="'+(y+ph/2)+'" text-anchor="end" dominant-baseline="middle" class="diagram-label">'+h+' cm</text>'+
+      '<text x="'+(x-14)+'" y="'+(y+ph/2)+'" text-anchor="end" dominant-baseline="middle" class="diagram-label">'+h+' cm</text>'+
       '</svg>';
   }
 
   function lShapeSVG(W,H,cw,ch){
     var maxPx=150, scale=maxPx/Math.max(W,H);
-    var w=W*scale, h=H*scale, c1=cw*scale, c2=ch*scale, x0=44, y0=26;
+    var w=W*scale, h=H*scale, c1=cw*scale, c2=ch*scale, x0=58, y0=26;
     var pts=[
       [x0, y0+h],
       [x0+w, y0+h],
@@ -611,10 +611,10 @@
       [x0+w-c1, y0],
       [x0, y0]
     ].map(function(p){ return p.join(','); }).join(' ');
-    return '<svg viewBox="0 0 '+(w+90)+' '+(h+56)+'" class="q-diagram" role="img" aria-label="L-shaped figure">'+
+    return '<svg viewBox="0 0 '+(w+x0+40)+' '+(h+56)+'" class="q-diagram" role="img" aria-label="L-shaped figure">'+
       '<polygon points="'+pts+'" class="diagram-shape"/>'+
       '<text x="'+(x0+w/2)+'" y="'+(y0+h+22)+'" text-anchor="middle" class="diagram-label">'+W+' cm</text>'+
-      '<text x="'+(x0-10)+'" y="'+(y0+h/2)+'" text-anchor="end" dominant-baseline="middle" class="diagram-label">'+H+' cm</text>'+
+      '<text x="'+(x0-14)+'" y="'+(y0+h/2)+'" text-anchor="end" dominant-baseline="middle" class="diagram-label">'+H+' cm</text>'+
       '<text x="'+(x0+w-c1/2)+'" y="'+(y0-8)+'" text-anchor="middle" class="diagram-label small">'+cw+'</text>'+
       '<text x="'+(x0+w+10)+'" y="'+(y0+c2/2)+'" dominant-baseline="middle" class="diagram-label small">'+ch+'</text>'+
       '</svg>';
@@ -1044,10 +1044,10 @@
       answerArea.appendChild(list);
     } else {
       var input=document.createElement('input');
-      input.type = q.type==='text' ? 'text' : 'number';
-      if(q.type!=='text'){ input.inputMode='decimal'; input.step='any'; }
+      input.type = 'text';
+      if(q.type!=='text'){ input.inputMode='decimal'; }
       input.id='answerInput'; input.className='answer-input';
-      input.placeholder = q.type==='text' ? 'e.g. 12:45' : 'Your answer';
+      input.placeholder = q.type==='text' ? 'e.g. 12:45' : (q.money ? 'e.g. £4.50' : 'Your answer');
       input.autocomplete='off';
       if(prior){ input.value=prior.given; input.disabled=true; }
       answerArea.appendChild(input);
@@ -1091,7 +1091,8 @@
       var input2=document.getElementById('answerInput');
       given=input2.value.trim();
       if(given==='') return;
-      var num=parseFloat(given);
+      var cleaned=given.replace(/[^0-9.\-]/g,'');
+      var num=parseFloat(cleaned);
       isCorrect = !isNaN(num) && Math.abs(num-q.answer) < 0.01;
     }
     state.checked=true;
