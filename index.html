@@ -1,0 +1,2431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Maths Trainer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#EEF3F7;
+    --grid-line:#D9E3EC;
+    --surface:#FFFFFF;
+    --surface-alt:#E6EDF4;
+    --ink:#1F3A5F;
+    --ink-soft:#52708C;
+    --ink-faint:#8AA2B8;
+    --border:#CBD9E4;
+    --accent:#E2A33D;
+    --accent-strong:#C98620;
+    --accent-ink:#4A3210;
+    --correct:#2F8F5B;
+    --correct-bg:#E3F3EA;
+    --incorrect:#C6432E;
+    --incorrect-bg:#FBE7E2;
+    --shadow:rgba(31,58,95,0.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0F1A24;
+      --grid-line:#1B2A38;
+      --surface:#17242F;
+      --surface-alt:#1E2E3C;
+      --ink:#E8EDF2;
+      --ink-soft:#A9BBCB;
+      --ink-faint:#6E8296;
+      --border:#28394A;
+      --accent:#F0B65A;
+      --accent-strong:#F6C97A;
+      --accent-ink:#241705;
+      --correct:#4FBE84;
+      --correct-bg:#163326;
+      --incorrect:#E2604A;
+      --incorrect-bg:#3A1E17;
+      --shadow:rgba(0,0,0,0.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0F1A24;
+    --grid-line:#1B2A38;
+    --surface:#17242F;
+    --surface-alt:#1E2E3C;
+    --ink:#E8EDF2;
+    --ink-soft:#A9BBCB;
+    --ink-faint:#6E8296;
+    --border:#28394A;
+    --accent:#F0B65A;
+    --accent-strong:#F6C97A;
+    --accent-ink:#241705;
+    --correct:#4FBE84;
+    --correct-bg:#163326;
+    --incorrect:#E2604A;
+    --incorrect-bg:#3A1E17;
+    --shadow:rgba(0,0,0,0.45);
+  }
+
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(0deg, var(--grid-line) 0 1px, transparent 1px 30px),
+      repeating-linear-gradient(90deg, var(--grid-line) 0 1px, transparent 1px 30px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{text-wrap:balance;margin:0;}
+
+  .page{
+    max-width:640px;
+    margin:0 auto;
+    padding-inline:20px;
+    padding-block:36px 56px;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+  }
+
+  .masthead{display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center;}
+  .stamp{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:700;
+    font-size:clamp(28px,6vw,42px);
+    letter-spacing:0.2px;
+    color:var(--ink);
+  }
+  .subtitle{
+    font-size:14.5px;
+    color:var(--ink-soft);
+    max-width:46ch;
+  }
+  .ruler{
+    width:100%;
+    height:22px;
+    border-radius:5px;
+    border:1px solid var(--border);
+    background:
+      repeating-linear-gradient(90deg, var(--ink-faint) 0 1.5px, transparent 1.5px 20px),
+      var(--surface-alt);
+    opacity:0.7;
+  }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:26px;
+    box-shadow:0 14px 34px var(--shadow);
+  }
+
+  .screen{display:flex;flex-direction:column;gap:22px;}
+
+  /* --- setup --- */
+  .setup-block{display:flex;flex-direction:column;gap:10px;}
+  .setup-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:0.09em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .segmented{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .seg-btn{
+    flex:1 1 0;
+    min-width:64px;
+    padding:11px 12px;
+    border-radius:10px;
+    border:1.5px solid var(--border);
+    background:var(--surface-alt);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    text-align:center;
+    cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .seg-btn:hover{border-color:var(--accent-strong);}
+  .seg-btn:focus-visible{outline:2px solid var(--accent-strong);outline-offset:2px;}
+  .seg-btn.selected{background:var(--accent);color:var(--accent-ink);border-color:var(--accent-strong);}
+  .chip{text-align:left;padding:13px 14px;}
+  .chip-sub{display:block;font-weight:400;font-size:11.5px;color:var(--ink-faint);margin-top:4px;}
+  .seg-btn.selected .chip-sub{color:var(--accent-ink);opacity:0.75;}
+
+  .btn-primary{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border:1.5px solid var(--accent-strong);
+    border-radius:11px;
+    padding:14px 20px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:700;
+    font-size:16px;
+    cursor:pointer;
+    width:100%;
+    transition:background .15s ease;
+  }
+  .btn-primary:hover{background:var(--accent-strong);}
+  .btn-primary:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .btn-secondary{
+    background:transparent;
+    color:var(--ink);
+    border:1.5px solid var(--border);
+    border-radius:11px;
+    padding:14px 20px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    width:100%;
+  }
+  .btn-secondary:hover{border-color:var(--ink-soft);}
+
+  .setup-note{
+    margin:0;
+    font-size:13px;
+    color:var(--ink-faint);
+    line-height:1.5;
+  }
+
+  .name-input{
+    width:100%;
+    padding:13px 16px;
+    border-radius:10px;
+    border:1.5px solid var(--border);
+    background:var(--surface-alt);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-size:16px;
+  }
+  .name-input:focus-visible{outline:2px solid var(--accent-strong);outline-offset:1px;}
+  .name-input.input-error{border-color:var(--incorrect);}
+  .field-error{font-size:12.5px;color:var(--incorrect);}
+
+  /* --- quiz --- */
+  .quiz-nav{display:flex;justify-content:space-between;align-items:center;}
+  .btn-link{
+    background:transparent;
+    border:none;
+    padding:6px 4px;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+  .btn-link:hover{color:var(--ink);}
+  .btn-link:focus-visible{outline:2px solid var(--accent-strong);outline-offset:2px;}
+  .quiz-topbar{display:flex;flex-direction:column;gap:10px;}
+  .progress-track{height:8px;border-radius:5px;background:var(--surface-alt);overflow:hidden;}
+  .progress-fill{height:100%;background:var(--accent);width:0%;transition:width .25s ease;}
+  .quiz-meta{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    letter-spacing:0.02em;
+  }
+
+  .q-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .q-text{
+    margin-top:10px;
+    font-size:clamp(17px,2.6vw,20px);
+    font-weight:600;
+    line-height:1.5;
+    color:var(--ink);
+  }
+  .q-visual{margin:16px 0;display:flex;justify-content:center;}
+  .q-diagram{width:100%;max-width:210px;height:auto;}
+  .diagram-shape{fill:var(--surface-alt);stroke:var(--ink);stroke-width:2;}
+  .diagram-line{stroke:var(--ink);stroke-width:2;}
+  .diagram-arc{fill:none;stroke:var(--accent-strong);stroke-width:2.5;}
+  .diagram-vertex{fill:var(--ink);}
+  .diagram-label{font-family:'IBM Plex Mono',monospace;font-size:12px;fill:var(--ink-soft);}
+  .diagram-label.small{font-size:10px;}
+  .diagram-sector{stroke:var(--surface);stroke-width:2;}
+  .q-diagram.wide{max-width:330px;}
+  .diagram-line.thin{stroke-width:1.2;}
+  .diagram-grid{stroke:var(--border);stroke-width:1;}
+  .diagram-bar{fill:var(--accent);stroke:var(--accent-strong);stroke-width:1;}
+  .diagram-point{fill:var(--accent-strong);}
+  .diagram-arrow{stroke:var(--accent-strong);stroke-width:2.5;}
+  .diagram-face{fill:var(--surface);stroke:var(--ink);stroke-width:2.5;}
+  .diagram-tick{stroke:var(--ink-faint);stroke-width:1;}
+  .diagram-tick.big{stroke:var(--ink);stroke-width:2;}
+  .diagram-hand{stroke:var(--ink);stroke-width:3;stroke-linecap:round;}
+  .diagram-hand.hour{stroke-width:5;}
+  .sector-1{fill:var(--accent);}
+  .sector-2{fill:var(--ink-soft);}
+  .sector-3{fill:var(--surface-alt);stroke:var(--incorrect);stroke-dasharray:4 3;}
+
+  .q-answer{display:flex;}
+  .answer-input{
+    width:100%;
+    max-width:220px;
+    padding:14px 16px;
+    border-radius:10px;
+    border:1.5px solid var(--border);
+    background:var(--surface-alt);
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:19px;
+  }
+  .answer-input:focus-visible{outline:2px solid var(--accent-strong);outline-offset:1px;}
+  .answer-input:disabled{opacity:0.7;}
+
+  .mc-list{display:flex;flex-direction:column;gap:10px;width:100%;}
+  .mc-btn{
+    width:100%;
+    text-align:left;
+    padding:13px 16px;
+    border-radius:10px;
+    border:1.5px solid var(--border);
+    background:var(--surface-alt);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+  }
+  .mc-btn:hover{border-color:var(--accent-strong);}
+  .mc-btn.selected{background:var(--accent);color:var(--accent-ink);border-color:var(--accent-strong);}
+  .mc-btn:disabled{cursor:default;}
+
+  .q-feedback{
+    margin-top:18px;
+    padding:15px 17px;
+    border-radius:11px;
+    border:1.5px solid var(--border);
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .q-feedback.is-correct{border-color:var(--correct);background:var(--correct-bg);}
+  .q-feedback.is-incorrect{border-color:var(--incorrect);background:var(--incorrect-bg);}
+  .fb-icon{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:20px;
+    font-weight:600;
+    line-height:1.3;
+  }
+  .is-correct .fb-icon{color:var(--correct);}
+  .is-incorrect .fb-icon{color:var(--incorrect);}
+  .fb-title{font-weight:700;font-size:14.5px;margin-bottom:4px;}
+  .is-correct .fb-title{color:var(--correct);}
+  .is-incorrect .fb-title{color:var(--incorrect);}
+  .fb-explain{font-size:13.5px;color:var(--ink-soft);line-height:1.5;}
+
+  .q-actions{margin-top:20px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .q-actions .btn-primary{width:auto;padding:12px 24px;}
+  .q-actions .btn-secondary{width:auto;padding:12px 18px;}
+  .prev-btn:disabled{opacity:0;pointer-events:none;}
+
+  /* --- results --- */
+  .results-head{text-align:center;display:flex;flex-direction:column;gap:6px;}
+  .score-stamp{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:700;
+    font-size:clamp(40px,9vw,58px);
+    font-variant-numeric:tabular-nums;
+    color:var(--ink);
+  }
+  .score-sub{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-soft);}
+
+  .teacher-card{
+    border:2px dashed var(--accent-strong);
+    border-radius:12px;
+    padding:18px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    background:var(--surface-alt);
+  }
+  .teacher-card-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .teacher-name{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:700;
+    font-size:22px;
+    color:var(--ink);
+    text-wrap:balance;
+  }
+  .teacher-score{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .teacher-meta{font-size:12.5px;color:var(--ink-soft);}
+
+  .breakdown{display:flex;flex-direction:column;gap:10px;}
+  .bd-row{display:grid;grid-template-columns:120px 1fr auto;gap:12px;align-items:center;}
+  .bd-label{font-size:12.5px;line-height:1.3;color:var(--ink-soft);}
+  .bd-track{height:8px;border-radius:5px;background:var(--surface-alt);overflow:hidden;}
+  .bd-fill{height:100%;background:var(--accent);}
+  .bd-frac{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-faint);}
+
+  .review{display:flex;flex-direction:column;gap:12px;}
+  .review-heading{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .review-item{
+    background:var(--surface-alt);
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:14px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+  }
+  .review-q{font-weight:600;font-size:14.5px;color:var(--ink);}
+  .review-given{font-size:13px;color:var(--incorrect);}
+  .review-correct{font-size:13px;color:var(--correct);}
+  .review-explain{font-size:12.5px;color:var(--ink-soft);margin-top:3px;}
+  .review-perfect{
+    text-align:center;
+    padding:18px;
+    color:var(--correct);
+    font-weight:600;
+    background:var(--correct-bg);
+    border:1.5px solid var(--correct);
+    border-radius:11px;
+  }
+
+  .results-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .results-actions > *{flex:1 1 180px;}
+
+  footer{text-align:center;font-size:12.5px;color:var(--ink-faint);line-height:1.6;}
+
+  /* --- confirm overlay --- */
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,26,36,0.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .overlay-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:22px;
+    max-width:320px;
+    width:100%;
+    box-shadow:0 18px 40px var(--shadow);
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .overlay-title{font-weight:700;font-size:16px;color:var(--ink);}
+  .overlay-text{font-size:13.5px;color:var(--ink-soft);line-height:1.5;}
+  .overlay-actions{display:flex;gap:10px;}
+  .overlay-actions > *{flex:1 1 0;width:auto;padding:11px 14px;font-size:14px;}
+
+  @media (max-width:420px){
+    .chip-grid{grid-template-columns:1fr;}
+    .bd-row{grid-template-columns:1fr;gap:4px;}
+    .bd-frac{justify-self:end;}
+  }
+</style>
+</head>
+<body>
+
+
+<div class="page">
+  <div class="masthead">
+    <div class="stamp">Maths Trainer</div>
+    <div class="subtitle">Instant-marked P5&ndash;P7 practice &mdash; number, measures &amp; SEAG-style problem solving, with a fresh set of questions every time.</div>
+    <div class="ruler" aria-hidden="true"></div>
+  </div>
+
+  <main class="card" id="app">
+    <section id="screen-setup" class="screen">
+      <div class="setup-block">
+        <div class="setup-label">Your name</div>
+        <input type="text" id="pupilName" class="name-input" placeholder="Type your name" autocomplete="off" maxlength="40">
+        <div class="field-error" id="nameError" hidden>Type your name so your teacher knows whose score this is.</div>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-label">Class</div>
+        <div class="segmented" id="classGroup">
+          <button type="button" class="seg-btn" data-value="Y6D">Y6D</button>
+          <button type="button" class="seg-btn" data-value="Y6B">Y6B</button>
+          <button type="button" class="seg-btn" data-value="Y6C">Y6C</button>
+        </div>
+        <div class="field-error" id="classError" hidden>Choose your class so your teacher knows where to find your score.</div>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-label">Year group</div>
+        <div class="segmented" id="yearGroup">
+          <button type="button" class="seg-btn" data-value="0">P5</button>
+          <button type="button" class="seg-btn selected" data-value="1">P6</button>
+          <button type="button" class="seg-btn" data-value="2">P7</button>
+        </div>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-label">Focus</div>
+        <div class="chip-grid" id="strandGroup">
+          <button type="button" class="seg-btn chip" data-value="number">Number &amp; Calculation<span class="chip-sub">arithmetic, fractions, percentages</span></button>
+          <button type="button" class="seg-btn chip" data-value="measures">Measures, Shape &amp; Data<span class="chip-sub">area, angles, time, charts</span></button>
+          <button type="button" class="seg-btn chip" data-value="seag">SEAG Problem Solving<span class="chip-sub">multi-step word problems</span></button>
+          <button type="button" class="seg-btn chip selected" data-value="mixed">Mixed Review<span class="chip-sub">a bit of everything</span></button>
+        </div>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-label">Difficulty</div>
+        <div class="segmented" id="sectionGroup">
+          <button type="button" class="seg-btn" data-value="0">Section A<span class="chip-sub">Foundation</span></button>
+          <button type="button" class="seg-btn selected" data-value="1">Section B<span class="chip-sub">Core</span></button>
+          <button type="button" class="seg-btn" data-value="2">Section C<span class="chip-sub">Extension</span></button>
+        </div>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-label">Length</div>
+        <div class="segmented" id="countGroup">
+          <button type="button" class="seg-btn selected" data-value="10">10 questions</button>
+          <button type="button" class="seg-btn" data-value="15">15 questions</button>
+          <button type="button" class="seg-btn" data-value="20">20 questions</button>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary" id="startBtn">Start practice</button>
+      <p class="setup-note">Every question is marked the moment you answer it, with a worked explanation underneath &mdash; like a teacher's red pen. Numbers are freshly generated each time, so no two runs are the same.</p>
+    </section>
+
+    <section id="screen-quiz" class="screen" hidden>
+      <div class="quiz-nav">
+        <button type="button" class="btn-link" id="homeBtn">&larr; Home</button>
+      </div>
+      <div class="quiz-topbar">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="quiz-meta">
+          <span id="qCounter">Question 1 of 10</span>
+          <span id="sectionBadge">Section B &middot; P6</span>
+          <span id="scoreChip">Score: 0</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="q-tag" id="qTag">Number &amp; Calculation</div>
+        <div class="q-text" id="qText"></div>
+        <div class="q-visual" id="qVisual"></div>
+        <div class="q-answer" id="qAnswerArea"></div>
+        <div class="q-feedback" id="qFeedback" hidden></div>
+        <div class="q-actions">
+          <button type="button" class="btn-secondary prev-btn" id="prevBtn">&larr; Previous</button>
+          <button type="button" class="btn-primary" id="checkBtn">Check</button>
+          <button type="button" class="btn-primary" id="nextBtn" hidden>Next question</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-results" class="screen" hidden>
+      <div class="results-head">
+        <div class="score-stamp" id="scoreStamp">0 / 10</div>
+        <div class="score-sub" id="scoreSub"></div>
+      </div>
+      <div class="teacher-card">
+        <div class="teacher-card-label">Show your teacher</div>
+        <div class="teacher-name" id="teacherName"></div>
+        <div class="teacher-score" id="teacherScoreLine"></div>
+        <div class="teacher-meta" id="teacherMeta"></div>
+      </div>
+      <div class="breakdown" id="breakdown"></div>
+      <div class="review" id="reviewSection"></div>
+      <div class="results-actions">
+        <button type="button" class="btn-secondary" id="retryBtn">Retry same settings</button>
+        <button type="button" class="btn-primary" id="newSetupBtn">New practice</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>A practice companion for P5&ndash;P7 maths and SEAG transfer test preparation.</footer>
+</div>
+
+<div class="overlay" id="confirmOverlay" hidden>
+  <div class="overlay-card">
+    <div class="overlay-title">Leave this practice?</div>
+    <div class="overlay-text">Your progress on this set will be lost.</div>
+    <div class="overlay-actions">
+      <button type="button" class="btn-secondary" id="confirmCancel">Cancel</button>
+      <button type="button" class="btn-primary" id="confirmLeave">Leave</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+// ==== GENERATORS START ====
+  // ---------- helpers ----------
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ var t=b; b=a%b; a=t; } return a; }
+  function lcm(a,b){ return a/gcd(a,b)*b; }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function sample(arr,n){ return shuffle(arr.slice()).slice(0,n); }
+  function clean(n){ return Number((+n).toFixed(6)); }
+  function commas(n){
+    var neg=n<0, s=String(Math.abs(clean(n))), parts=s.split('.');
+    parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg?'−':'')+parts.join('.');
+  }
+  function fmtNum(n){ n=clean(n); if(Math.abs(n)>=1000) return commas(n); return (n<0?'−':'')+String(Math.abs(n)); }
+  function trimNum(n){ return fmtNum(n); }
+  function fix(n,k){ return (n<0?'−':'')+Math.abs(n).toFixed(k); }
+  function gbp(p){ return '£'+(p/100).toFixed(2); }
+  function showP(p){ return p<100 ? p+'p' : gbp(p); }
+  function pd(x){ return '£'+(Number.isInteger(x)?commas(x):commas(Number(x.toFixed(2))).replace(/\.(\d)$/,'.$10')); }
+  function noteStr(p){ return '£'+(p/100); }
+  function isPrime(n){ if(n<2) return false; for(var i=2;i*i<=n;i++){ if(n%i===0) return false; } return true; }
+  function hhmm(h,m){ return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
+  function timeAccept(h,m){
+    var mm=String(m).padStart(2,'0'), a=String(h), b=String(h).padStart(2,'0');
+    return [a+':'+mm, b+':'+mm, a+'.'+mm, b+'.'+mm, a+mm, b+mm];
+  }
+  function plur(w){ if(/ of /.test(w)) return w.replace(/^(\w+)/,'$1s'); if(/(ch|sh|s|x)$/.test(w) || /[^aeiou]o$/.test(w)) return w+'es'; return w+'s'; }
+  function art(w){ return /^[aeiou]/i.test(w) ? 'an' : 'a'; }
+  function Art(w){ return /^[aeiou]/i.test(w) ? 'An' : 'A'; }
+  function listJoin(a){ return a.length<2 ? a.join('') : a.slice(0,-1).join(', ')+' and '+a[a.length-1]; }
+  function ordinal(n){ var s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
+  function durWords(d){ var h=Math.floor(d/60), m=d%60; if(!h) return m+' minutes'; return h+' hour'+(h>1?'s':'')+(m?' and '+m+' minutes':''); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function hashStr(s){ var h=5381; for(var i=0;i<s.length;i++){ h=((h<<5)+h+s.charCodeAt(i))|0; } return (h>>>0).toString(36); }
+
+  var NAMES=['Aoife','Ciarán','Niamh','Jack','Oisín','Grace','Callum','Erin','Rory','Megan','Conor','Sophie','Lucy','James','Eva','Harry','Orla','Finn','Chloe','Daniel','Ella','Ruairí','Katie','Adam','Caoimhe','Ben','Zara','Noah','Hannah','Luke','Amelia','Matthew','Isla','Charlie','Sarah','Tom','Maya','Ryan','Anna','Josh','Freya','Ethan','Holly','Cian','Leah','Sam','Emma','Dylan','Ava','Jamie','Rachel','Peter','Molly','Aaron','Clodagh','Mark','Ruby','Scott','Abbie','Kyle'];
+  var TOWNS=['Bangor','Belfast','Newtownards','Holywood','Lisburn','Armagh','Enniskillen','Portrush','Ballymena','Coleraine','Downpatrick','Carrickfergus','Newry','Comber','Donaghadee','Larne','Omagh','Dungannon','Banbridge','Antrim'];
+  var SCHOOL_ITEMS=[['pencil case',150,450],['notebook',80,250],['ruler',40,120],['rubber',25,90],['glue stick',60,180],['sharpener',30,110],['folder',90,300],['calculator',350,900],['pack of pens',120,400],['colouring book',200,550],['set of paints',300,800],['school bag',900,2400]];
+  var SHOP_ITEMS=[['comic',150,400],['bag of crisps',45,110],['bottle of water',60,150],['sandwich',180,395],['apple',25,70],['chocolate bar',55,140],['magazine',250,550],['football',600,1500],['jigsaw',400,1200],['board game',900,2400],['book',399,899],['hat',500,1400],['torch',300,900],['kite',450,1300]];
+  function nm(){ return choice(NAMES); }
+  function nms(k){ return sample(NAMES,k); }
+
+  function Q(tag,text,answer,explanation,extra){
+    var q={tag:tag,text:text,answer:answer,explanation:explanation};
+    if(extra){ for(var k in extra){ if(Object.prototype.hasOwnProperty.call(extra,k)) q[k]=extra[k]; } }
+    return q;
+  }
+  function MC(tag,text,correct,distractors,explanation,extra){
+    var ch=[correct];
+    distractors.forEach(function(d){ if(ch.indexOf(d)===-1) ch.push(d); });
+    return Q(tag,text,correct,explanation,Object.assign({type:'mc',choices:shuffle(ch)},extra||{}));
+  }
+  function TXT(tag,text,answer,explanation,accept,extra){
+    return Q(tag,text,answer,explanation,Object.assign({type:'text',accept:accept||[]},extra||{}));
+  }
+  function formatAnswer(q){
+    if(q.type==='mc' || q.type==='text') return q.answer;
+    if(q.money){ var ms=(+q.answer).toFixed(2).split('.'); return '£'+ms[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')+'.'+ms[1]; }
+    return fmtNum(+q.answer);
+  }
+
+  // ---------- diagrams ----------
+  function rectSVG(w,h,u){
+    u=u||'cm';
+    var maxPx=170, scale=maxPx/Math.max(w,h);
+    var pw=Math.max(w*scale,14), ph=Math.max(h*scale,14), x=58, y=24;
+    var vbW=pw+x+40, vbH=ph+56;
+    return '<svg viewBox="0 0 '+vbW+' '+vbH+'" class="q-diagram" role="img" aria-label="Rectangle '+w+' by '+h+'">'+
+      '<rect x="'+x+'" y="'+y+'" width="'+pw+'" height="'+ph+'" class="diagram-shape"/>'+
+      '<text x="'+(x+pw/2)+'" y="'+(y-9)+'" text-anchor="middle" class="diagram-label">'+w+' '+u+'</text>'+
+      '<text x="'+(x-14)+'" y="'+(y+ph/2)+'" text-anchor="end" dominant-baseline="middle" class="diagram-label">'+h+' '+u+'</text>'+
+      '</svg>';
+  }
+
+  function lShapeSVG(W,H,cw,ch){
+    var maxPx=150, scale=maxPx/Math.max(W,H);
+    var w=W*scale, h=H*scale, c1=cw*scale, c2=ch*scale, x0=58, y0=26;
+    var pts=[
+      [x0, y0+h],
+      [x0+w, y0+h],
+      [x0+w, y0+c2],
+      [x0+w-c1, y0+c2],
+      [x0+w-c1, y0],
+      [x0, y0]
+    ].map(function(p){ return p.join(','); }).join(' ');
+    return '<svg viewBox="0 0 '+(w+x0+40)+' '+(h+56)+'" class="q-diagram" role="img" aria-label="L-shaped figure">'+
+      '<polygon points="'+pts+'" class="diagram-shape"/>'+
+      '<text x="'+(x0+w/2)+'" y="'+(y0+h+22)+'" text-anchor="middle" class="diagram-label">'+W+' cm</text>'+
+      '<text x="'+(x0-14)+'" y="'+(y0+h/2)+'" text-anchor="end" dominant-baseline="middle" class="diagram-label">'+H+' cm</text>'+
+      '<text x="'+(x0+w-c1/2)+'" y="'+(y0+c2-8)+'" text-anchor="middle" class="diagram-label small">'+cw+' cm</text>'+
+      '<text x="'+(x0+w+8)+'" y="'+(y0+c2/2)+'" dominant-baseline="middle" class="diagram-label small">'+ch+' cm</text>'+
+      '</svg>';
+  }
+
+  function angleSVG(deg){
+    var reflex=deg>180, cx=100, cy=reflex?100:112, r=72, rad=deg*Math.PI/180, vbH=reflex?200:140;
+    var x2=(cx+r*Math.cos(-rad)).toFixed(1), y2=(cy+r*Math.sin(-rad)).toFixed(1);
+    var arcR=reflex?26:30;
+    var ax1=(cx+arcR).toFixed(1), ay1=cy.toFixed(1);
+    var ax2=(cx+arcR*Math.cos(-rad)).toFixed(1), ay2=(cy+arcR*Math.sin(-rad)).toFixed(1);
+    var arc = deg===90
+      ? '<path d="M '+(cx+16)+' '+cy+' L '+(cx+16)+' '+(cy-16)+' L '+cx+' '+(cy-16)+'" class="diagram-arc"/>'
+      : '<path d="M '+ax1+' '+ay1+' A '+arcR+' '+arcR+' 0 '+(reflex?1:0)+' 0 '+ax2+' '+ay2+'" class="diagram-arc"/>';
+    return '<svg viewBox="0 0 200 '+vbH+'" class="q-diagram" role="img" aria-label="Angle diagram">'+
+      '<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+r)+'" y2="'+cy+'" class="diagram-line"/>'+
+      '<line x1="'+cx+'" y1="'+cy+'" x2="'+x2+'" y2="'+y2+'" class="diagram-line"/>'+
+      arc+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="3.5" class="diagram-vertex"/>'+
+      '</svg>';
+  }
+
+  function angleOnLineSVG(deg){
+    var cx=100, cy=100, r=80, rad=deg*Math.PI/180;
+    var x3=(cx+r*Math.cos(-rad)).toFixed(1), y3=(cy+r*Math.sin(-rad)).toFixed(1);
+    var lx=(cx+34*Math.cos(-rad/2)).toFixed(1), ly=(cy+34*Math.sin(-rad/2)).toFixed(1);
+    var qx=(cx+34*Math.cos(-(rad+Math.PI)/2)).toFixed(1), qy=(cy+34*Math.sin(-(rad+Math.PI)/2)).toFixed(1);
+    return '<svg viewBox="0 0 200 120" class="q-diagram" role="img" aria-label="Angles on a line">'+
+      '<line x1="10" y1="'+cy+'" x2="190" y2="'+cy+'" class="diagram-line"/>'+
+      '<line x1="'+cx+'" y1="'+cy+'" x2="'+x3+'" y2="'+y3+'" class="diagram-line"/>'+
+      '<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="middle" class="diagram-label">'+deg+'°</text>'+
+      '<text x="'+qx+'" y="'+qy+'" text-anchor="middle" dominant-baseline="middle" class="diagram-label">?</text>'+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="3.5" class="diagram-vertex"/>'+
+      '</svg>';
+  }
+
+  function angleAroundPointSVG(a,b,c){
+    var cx=100, cy=100, r=72, angles=[a,b,c], classes=['sector-1','sector-2','sector-3'];
+    var start=-90, paths='';
+    angles.forEach(function(ang,i){
+      var end=start+ang;
+      var x1=(cx+r*Math.cos(start*Math.PI/180)).toFixed(1), y1=(cy+r*Math.sin(start*Math.PI/180)).toFixed(1);
+      var x2=(cx+r*Math.cos(end*Math.PI/180)).toFixed(1), y2=(cy+r*Math.sin(end*Math.PI/180)).toFixed(1);
+      var largeArc = ang>180?1:0;
+      paths += '<path d="M '+cx+' '+cy+' L '+x1+' '+y1+' A '+r+' '+r+' 0 '+largeArc+' 1 '+x2+' '+y2+' Z" class="diagram-sector '+classes[i]+'"/>';
+      start=end;
+    });
+    return '<svg viewBox="0 0 200 200" class="q-diagram" role="img" aria-label="Angles around a point">'+paths+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="3.5" class="diagram-vertex"/></svg>';
+  }
+
+  function barsSVG(vals){
+    var maxV=Math.max.apply(null,vals), w=200, h=100, pad=10, gap=8, n=vals.length;
+    var barW=(w-2*pad-(n-1)*gap)/n, bars='';
+    vals.forEach(function(v,i){
+      var bh=(v/maxV)*(h-24), x=pad+i*(barW+gap), y=h-bh-14;
+      bars += '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+bh.toFixed(1)+'" class="diagram-shape"/>'+
+        '<text x="'+(x+barW/2).toFixed(1)+'" y="'+(h-2)+'" text-anchor="middle" class="diagram-label small">'+v+'</text>';
+    });
+    return '<svg viewBox="0 0 '+w+' '+h+'" class="q-diagram" role="img" aria-label="Bar chart of values">'+bars+'</svg>';
+  }
+
+  function triangleSVG(a,b){
+    var c=180-a-b, A=a*Math.PI/180, B=b*Math.PI/180, base=170;
+    var side=base*Math.sin(B)/Math.sin(A+B), hgt=side*Math.sin(A);
+    if(hgt>140){ base=base*140/hgt; side=base*Math.sin(B)/Math.sin(A+B); hgt=side*Math.sin(A); }
+    var ax=(220-base)/2, ay=hgt+30, bx=ax+base, by=ay, cx2=ax+side*Math.cos(A), cy2=ay-hgt;
+    function lab(px,py,dx,dy,txt){ return '<text x="'+(px+dx).toFixed(1)+'" y="'+(py+dy).toFixed(1)+'" text-anchor="middle" dominant-baseline="middle" class="diagram-label small">'+txt+'</text>'; }
+    var la=lab(ax,ay,26*Math.cos(A/2),-26*Math.sin(A/2),a+'°');
+    var lb=lab(bx,by,-26*Math.cos(B/2),-26*Math.sin(B/2),b+'°');
+    var mx=(ax+bx)/2-cx2, my=ay-cy2, len=Math.sqrt(mx*mx+my*my);
+    var lc=lab(cx2,cy2,22*mx/len,22*my/len,'?');
+    return '<svg viewBox="0 0 220 '+(ay+14).toFixed(0)+'" class="q-diagram" role="img" aria-label="Triangle with two angles marked">'+
+      '<polygon points="'+ax.toFixed(1)+','+ay.toFixed(1)+' '+bx.toFixed(1)+','+by.toFixed(1)+' '+cx2.toFixed(1)+','+cy2.toFixed(1)+'" class="diagram-shape"/>'+
+      la+lb+lc+'</svg>';
+  }
+
+  function clockSVG(h,m){
+    var cx=100, cy=100, R=86, out='<circle cx="100" cy="100" r="'+R+'" class="diagram-face"/>';
+    for(var i=0;i<60;i++){
+      var ang=i*6*Math.PI/180, big=i%5===0, r1=big?R-10:R-5;
+      out+='<line x1="'+(cx+r1*Math.sin(ang)).toFixed(1)+'" y1="'+(cy-r1*Math.cos(ang)).toFixed(1)+'" x2="'+(cx+(R-1)*Math.sin(ang)).toFixed(1)+'" y2="'+(cy-(R-1)*Math.cos(ang)).toFixed(1)+'" class="diagram-tick'+(big?' big':'')+'"/>';
+    }
+    for(var n=1;n<=12;n++){
+      var a2=n*30*Math.PI/180;
+      out+='<text x="'+(cx+(R-22)*Math.sin(a2)).toFixed(1)+'" y="'+(cy-(R-22)*Math.cos(a2)).toFixed(1)+'" text-anchor="middle" dominant-baseline="central" class="diagram-label">'+n+'</text>';
+    }
+    var ma=m*6*Math.PI/180, ha=((h%12)*30+m*0.5)*Math.PI/180;
+    out+='<line x1="100" y1="100" x2="'+(cx+42*Math.sin(ha)).toFixed(1)+'" y2="'+(cy-42*Math.cos(ha)).toFixed(1)+'" class="diagram-hand hour"/>';
+    out+='<line x1="100" y1="100" x2="'+(cx+66*Math.sin(ma)).toFixed(1)+'" y2="'+(cy-66*Math.cos(ma)).toFixed(1)+'" class="diagram-hand"/>';
+    out+='<circle cx="100" cy="100" r="4" class="diagram-vertex"/>';
+    return '<svg viewBox="0 0 200 200" class="q-diagram" role="img" aria-label="Analogue clock">'+out+'</svg>';
+  }
+
+  function numberLineSVG(start,step,n,pos,unit){
+    var x0=24, x1=276, y=58, w=(x1-x0)/n, out='';
+    out+='<line x1="'+x0+'" y1="'+y+'" x2="'+x1+'" y2="'+y+'" class="diagram-line"/>';
+    var labelled=[0,n]; if(n%2===0 && n>=6) labelled.push(n/2);
+    for(var i=0;i<=n;i++){
+      var x=x0+i*w, big=labelled.indexOf(i)!==-1;
+      out+='<line x1="'+x.toFixed(1)+'" y1="'+(y-(big?9:6))+'" x2="'+x.toFixed(1)+'" y2="'+(y+(big?9:6))+'" class="diagram-line"/>';
+      if(big) out+='<text x="'+x.toFixed(1)+'" y="'+(y+24)+'" text-anchor="middle" class="diagram-label small">'+fmtNum(start+step*i)+(unit?' '+unit:'')+'</text>';
+    }
+    var ax=x0+pos*w;
+    out+='<line x1="'+ax.toFixed(1)+'" y1="'+(y-38)+'" x2="'+ax.toFixed(1)+'" y2="'+(y-16)+'" class="diagram-arrow"/>';
+    out+='<polygon points="'+(ax-6).toFixed(1)+','+(y-18)+' '+(ax+6).toFixed(1)+','+(y-18)+' '+ax.toFixed(1)+','+(y-8)+'" class="diagram-point"/>';
+    return '<svg viewBox="0 0 300 96" class="q-diagram wide" role="img" aria-label="Number line with an arrow">'+out+'</svg>';
+  }
+
+  function barChartSVG(labels,vals,step,top){
+    var W=310, left=40, right=8, topY=14, bottom=150, plotH=bottom-topY, n=vals.length, gap=12;
+    var bw=(W-left-right-gap*(n+1))/n, out='';
+    for(var g=0; g<=top+0.0001; g+=step){
+      var gy=bottom-(g/top)*plotH;
+      out+='<line x1="'+left+'" y1="'+gy.toFixed(1)+'" x2="'+(W-right)+'" y2="'+gy.toFixed(1)+'" class="diagram-grid"/>';
+      out+='<text x="'+(left-6)+'" y="'+gy.toFixed(1)+'" text-anchor="end" dominant-baseline="middle" class="diagram-label small">'+fmtNum(g)+'</text>';
+    }
+    vals.forEach(function(v,i){
+      var bh=(v/top)*plotH, x=left+gap+i*(bw+gap);
+      out+='<rect x="'+x.toFixed(1)+'" y="'+(bottom-bh).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh.toFixed(1)+'" class="diagram-bar"/>';
+      out+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(bottom+15)+'" text-anchor="middle" class="diagram-label small">'+labels[i]+'</text>';
+    });
+    out+='<line x1="'+left+'" y1="'+topY+'" x2="'+left+'" y2="'+bottom+'" class="diagram-line thin"/>';
+    out+='<line x1="'+left+'" y1="'+bottom+'" x2="'+(W-right)+'" y2="'+bottom+'" class="diagram-line thin"/>';
+    return '<svg viewBox="0 0 '+W+' 172" class="q-diagram wide" role="img" aria-label="Bar chart">'+out+'</svg>';
+  }
+
+  function gridSVG(px,py,label,size){
+    size=size||8;
+    var o=28, c=22, out='', end=o+size*c;
+    for(var i=0;i<=size;i++){
+      var p=o+i*c;
+      out+='<line x1="'+p+'" y1="'+o+'" x2="'+p+'" y2="'+end+'" class="diagram-grid"/>';
+      out+='<line x1="'+o+'" y1="'+p+'" x2="'+end+'" y2="'+p+'" class="diagram-grid"/>';
+      out+='<text x="'+p+'" y="'+(end+15)+'" text-anchor="middle" class="diagram-label small">'+i+'</text>';
+      out+='<text x="'+(o-8)+'" y="'+(end-i*c)+'" text-anchor="end" dominant-baseline="middle" class="diagram-label small">'+i+'</text>';
+    }
+    out+='<line x1="'+o+'" y1="'+end+'" x2="'+end+'" y2="'+end+'" class="diagram-line thin"/>';
+    out+='<line x1="'+o+'" y1="'+o+'" x2="'+o+'" y2="'+end+'" class="diagram-line thin"/>';
+    var cx=o+px*c, cy=end-py*c;
+    out+='<circle cx="'+cx+'" cy="'+cy+'" r="5" class="diagram-point"/>';
+    out+='<text x="'+(cx+8)+'" y="'+(cy-8)+'" class="diagram-label">'+label+'</text>';
+    return '<svg viewBox="0 0 '+(end+16)+' '+(end+24)+'" class="q-diagram" role="img" aria-label="Coordinate grid with a point">'+out+'</svg>';
+  }
+
+  // ---------- template registry ----------
+  var TEMPLATES=[];
+  function T(id,cat,min,max,fn){ TEMPLATES.push({id:id,cat:cat,min:min,max:max,fn:fn}); }
+  // =====================================================================
+  // NUMBER & CALCULATION
+  // =====================================================================
+  var PLACE_NAMES={'6':'millions','5':'hundred thousands','4':'ten thousands','3':'thousands','2':'hundreds','1':'tens','0':'ones','-1':'tenths','-2':'hundredths','-3':'thousandths'};
+
+  T('n_addsub','number',0,2,function(t,s){
+    var R=[[[10,99],[25,400],[100,999]],[[100,999],[500,5000],[1000,9999]],[[1000,9999],[5000,50000],[10000,99999]]][t][s];
+    var a=randInt(R[0],R[1]), b=randInt(R[0],R[1]);
+    if(Math.random()<0.5){
+      var tx=choice([commas(a)+' + '+commas(b)+' = ?','Add '+commas(a)+' and '+commas(b)+'.','What is the sum of '+commas(a)+' and '+commas(b)+'?','What is '+commas(a)+' plus '+commas(b)+'?']);
+      return Q('Addition',tx,a+b,commas(a)+' + '+commas(b)+' = '+commas(a+b));
+    }
+    var hi=Math.max(a,b), lo=Math.min(a,b); if(hi===lo) hi+=randInt(1,9);
+    var ty=choice([commas(hi)+' − '+commas(lo)+' = ?','Subtract '+commas(lo)+' from '+commas(hi)+'.','What is the difference between '+commas(hi)+' and '+commas(lo)+'?','What is '+commas(hi)+' take away '+commas(lo)+'?']);
+    return Q('Subtraction',ty,hi-lo,commas(hi)+' − '+commas(lo)+' = '+commas(hi-lo));
+  });
+
+  T('n_missing','number',0,2,function(t,s){
+    var mx=[[50,100,200],[200,1000,2000],[1000,5000,20000]][t][s];
+    var a=randInt(Math.ceil(mx/10),mx), b=randInt(Math.ceil(mx/10),mx), c=a+b, f=randInt(0,3), text, ans;
+    if(f===0){ text='□ + '+commas(b)+' = '+commas(c); ans=a; }
+    else if(f===1){ text=commas(a)+' + □ = '+commas(c); ans=b; }
+    else if(f===2){ text='□ − '+commas(b)+' = '+commas(a); ans=c; }
+    else { text=commas(c)+' − □ = '+commas(a); ans=b; }
+    return Q('Missing numbers','What number goes in the box? '+text,ans,'The missing number is '+commas(ans)+': '+text.replace('□',commas(ans))+'.');
+  });
+
+  T('n_tables','number',0,2,function(t,s){
+    var hi=(t===0&&s===0)?10:12, a=randInt(2,hi), b=randInt(2,12), p=a*b, f=randInt(0,t===0?4:5);
+    if(f===0) return Q('Times tables',a+' × '+b+' = ?',p,a+' × '+b+' = '+p);
+    if(f===1) return Q('Division facts',p+' ÷ '+a+' = ?',b,p+' ÷ '+a+' = '+b+', because '+a+' × '+b+' = '+p);
+    if(f===2) return Q('Times tables','What is the product of '+a+' and '+b+'?',p,'"Product" means multiply: '+a+' × '+b+' = '+p);
+    if(f===3) return Q('Division facts','How many '+a+'s are there in '+p+'?',b,p+' ÷ '+a+' = '+b);
+    if(f===4) return Q('Times tables','What is '+b+' lots of '+a+'?',p,b+' × '+a+' = '+p);
+    var big=a*10;
+    return Q('Times tables',big+' × '+b+' = ?',big*b,a+' × '+b+' = '+p+', so '+big+' × '+b+' = '+commas(big*b));
+  });
+
+  T('n_mult','number',0,2,function(t,s){
+    var c=[[[11,49,2,5],[12,99,3,9],[101,499,3,9]],
+           [[101,999,2,9],[12,49,12,29],[23,99,13,49]],
+           [[23,99,12,59],[101,999,12,39],[1001,4999,11,29]]][t][s];
+    var a=randInt(c[0],c[1]), b=randInt(c[2],c[3]);
+    var text=choice([commas(a)+' × '+b+' = ?','Multiply '+commas(a)+' by '+b+'.','What is '+commas(a)+' multiplied by '+b+'?']);
+    return Q('Multiplication',text,a*b,commas(a)+' × '+b+' = '+commas(a*b));
+  });
+
+  T('n_div','number',0,2,function(t,s){
+    var c=[[[2,5,11,20],[3,9,12,30],[3,9,21,99]],
+           [[3,9,21,99],[3,9,101,250],[11,15,12,60]],
+           [[4,9,101,999],[12,25,12,60],[13,35,21,99]]][t][s];
+    var d=randInt(c[0],c[1]), q=randInt(c[2],c[3]), p=d*q;
+    var text=choice([commas(p)+' ÷ '+d+' = ?','Divide '+commas(p)+' by '+d+'.','What is '+commas(p)+' divided by '+d+'?']);
+    return Q('Division',text,q,commas(p)+' ÷ '+d+' = '+q+' (check: '+q+' × '+d+' = '+commas(p)+')');
+  });
+
+  T('n_rem','number',0,2,function(t,s){
+    var d=t===0?randInt(3,6):(t===1?randInt(3,9):randInt(7,15));
+    var q=t===0?randInt(3,12):(t===1?randInt(10,60):randInt(20,99));
+    var r=randInt(1,d-1), n=d*q+r;
+    return Q('Remainders','What is the remainder when '+commas(n)+' is divided by '+d+'?',r,commas(n)+' ÷ '+d+' = '+q+' remainder '+r+' (because '+q+' × '+d+' = '+commas(d*q)+')');
+  });
+
+  T('n_x10','number',0,2,function(t,s){
+    var ops = t<2 ? [['×',10],['×',100],['÷',10],['÷',100]] : [['×',10],['×',100],['×',1000],['÷',10],['÷',100],['÷',1000]];
+    var op=choice(ops), a;
+    if(t===0){ a = op[0]==='÷' ? randInt(2,s===2?99:30)*op[1] : randInt(3, s===2?999:99); }
+    else { var d=t===1?randInt(0,1):(op[1]===1000&&op[0]==='÷'?randInt(0,1):randInt(1,2)); a=clean(randInt(3, t===1?999:9999)/Math.pow(10,d)); }
+    var ans = op[0]==='×' ? clean(a*op[1]) : clean(a/op[1]);
+    var z=String(op[1]).length-1;
+    return Q('× and ÷ by 10, 100, 1000',fmtNum(a)+' '+op[0]+' '+commas(op[1])+' = ?',ans,
+      'Each digit moves '+z+' place'+(z>1?'s':'')+' to the '+(op[0]==='×'?'left':'right')+': '+fmtNum(a)+' '+op[0]+' '+commas(op[1])+' = '+fmtNum(ans)+'.');
+  });
+
+  T('n_place','number',0,2,function(t,s){
+    var intLen, decLen=0;
+    if(t===0){ intLen = s===2?5:4; }
+    else if(t===1){ if(s===2){ intLen=randInt(1,2); decLen=2; } else { intLen = s===0?5:6; } }
+    else { if(s>=1 && Math.random()<0.5){ intLen=randInt(1,2); decLen=3; } else { intLen=7; } }
+    for(var tries=0;tries<60;tries++){
+      var digits=[], i;
+      for(i=0;i<intLen+decLen;i++) digits.push(randInt(i===0?1:0,9));
+      var cands=[];
+      for(i=0;i<digits.length;i++){
+        var dg=digits[i];
+        if(dg===0) continue;
+        if(digits.filter(function(x){ return x===dg; }).length===1) cands.push(i);
+      }
+      if(!cands.length) continue;
+      var idx=choice(cands), d=digits[idx], pw=intLen-1-idx;
+      var shown=commas(Number(digits.slice(0,intLen).join('')))+(decLen?'.'+digits.slice(intLen).join(''):'');
+      var valStr=function(p){ return fmtNum(d*Math.pow(10,p)); };
+      var correct=valStr(pw), pool=[];
+      for(var p=-decLen-1;p<=intLen;p++){ if(p!==pw) pool.push(valStr(p)); }
+      return MC('Place value','What is the value of the digit '+d+' in '+shown+'?',correct,sample(pool,3),
+        'The '+d+' is in the '+PLACE_NAMES[String(pw)]+' place, so it is worth '+correct+'.');
+    }
+    return null;
+  });
+
+  T('n_round','number',0,2,function(t,s){
+    var f = t===0 ? 0 : randInt(0,1);
+    if(f===0){
+      var opts = t===0 ? (s===2?[10,100,1000]:[10,100]) : (t===1?[10,100,1000]:[100,1000,10000,100000]);
+      var to=choice(opts), hi = t===0?(s===0?999:9999):(t===1?99999:999999), n;
+      do{ n=randInt(to+1,hi); }while(n%to===0);
+      var ans=Math.round(n/to)*to, lo=Math.floor(n/to)*to;
+      return Q('Rounding','Round '+commas(n)+' to the nearest '+commas(to)+'.',ans,
+        commas(n)+' is between '+commas(lo)+' and '+commas(lo+to)+'. It is nearer to '+commas(ans)+' (halfway or more rounds up).');
+    }
+    var d = t===1 ? 1 : randInt(2,3), k = t===1 ? 0 : randInt(0,d-1), sc=Math.pow(10,d), iv;
+    do{ iv=randInt(sc+1, 99*sc); }while(iv % Math.pow(10,d-k)===0);
+    var x=iv/sc, r=Math.round(iv/Math.pow(10,d-k))/Math.pow(10,k);
+    var target = k===0?'the nearest whole number':(k===1?'1 decimal place':'2 decimal places');
+    return Q('Rounding decimals','Round '+x.toFixed(d)+' to '+target+'.',clean(r),x.toFixed(d)+' rounded to '+target+' is '+r.toFixed(k)+'.');
+  });
+
+  T('n_order','number',0,2,function(t,s){
+    var big=Math.random()<0.5, disp=[], vals=[], i;
+    if(t===0){
+      var digs=sample([1,2,3,4,5,6,7,8,9],4), seen={};
+      while(vals.length<4){ var v=Number(shuffle(digs.slice()).join('')); if(!seen[v]){ seen[v]=1; vals.push(v); } }
+      disp=vals.map(function(v){ return commas(v); });
+    } else {
+      var ip=randInt(0,t===1?9:20), a=randInt(1,9), b; do{ b=randInt(1,9); }while(b===a);
+      var pool=[''+a, ''+b, ''+a+b, ''+b+a];
+      if(t===2) pool.push('0'+a+b, ''+a+'0'+b, ''+b+'0'+a);
+      var pick=sample(pool,4);
+      disp=pick.map(function(x){ return ip+'.'+x; });
+      vals=disp.map(Number);
+    }
+    var order=vals.map(function(v,i2){ return i2; }).sort(function(p,q){ return vals[p]-vals[q]; });
+    var target=disp[big?order[order.length-1]:order[0]];
+    return MC('Ordering numbers','Which of these numbers is the '+(big?'largest':'smallest')+'?',target,disp.filter(function(x){ return x!==target; }),
+      'From smallest to largest: '+order.map(function(k){ return disp[k]; }).join(', ')+'.');
+  });
+
+  T('n_fracof','number',0,2,function(t,s){
+    var dens=t===0?[2,3,4,5,10]:(t===1?[3,4,5,6,8,10]:[3,5,6,7,8,9,12]);
+    var den=choice(dens), num=(t===0&&s===0)?1:randInt(1,den-1), g=gcd(num,den); num/=g; den/=g;
+    var mult=randInt(2, t===0?10:(t===1?12:25)), amount=den*mult, ans=mult*num, ctx=randInt(0,2), text;
+    if(ctx===0) text='What is '+num+'/'+den+' of '+amount+'?';
+    else if(ctx===1) text='Find '+num+'/'+den+' of '+amount+'.';
+    else text='What is '+num+'/'+den+' of £'+amount+'?';
+    return Q('Fractions of amounts',text,ans,amount+' ÷ '+den+' = '+mult+(num>1?', then '+mult+' × '+num+' = '+ans:'')+'.',ctx===2?{money:true}:null);
+  });
+
+  T('n_equivfrac','number',0,2,function(t,s){
+    var den=choice(t===0?[2,3,4,5,10]:[3,4,5,6,7,8,9,10,12]), num=randInt(1,den-1), g=gcd(num,den); num/=g; den/=g;
+    var k=randInt(2, t===0?5:(t===1?8:12)), N=num*k, D=den*k, f=randInt(0,2), text, ans;
+    if(f===0){ text=num+'/'+den+' = □/'+D; ans=N; }
+    else if(f===1){ text=num+'/'+den+' = '+N+'/□'; ans=D; }
+    else { text='□/'+den+' = '+N+'/'+D; ans=num; }
+    return Q('Equivalent fractions','Fill in the missing number: '+text,ans,'Multiply (or divide) the top and bottom by the same number, '+k+': '+num+'/'+den+' = '+N+'/'+D+'.');
+  });
+
+  T('n_simplify','number',1,2,function(t,s){
+    var d=choice(t===1?[3,4,5,6,8]:[3,4,5,6,7,8,9,10,12]), n=randInt(1,d-1), g=gcd(n,d); n/=g; d/=g;
+    var k=randInt(2, t===1?6:12);
+    return TXT('Simplifying fractions','Write '+(n*k)+'/'+(d*k)+' in its simplest form.',n+'/'+d,'Divide the top and bottom by '+k+': '+(n*k)+'/'+(d*k)+' = '+n+'/'+d+'.');
+  });
+
+  T('n_fracsame','number',0,1,function(t,s){
+    var den=choice([5,6,7,8,9,10,12]), add=Math.random()<0.5, a, b;
+    if(add){ a=randInt(1,den-2); b=randInt(1,den-1-a); }
+    else { a=randInt(2,den-1); b=randInt(1,a-1); }
+    var ans=add?a+b:a-b, text=a+'/'+den+' '+(add?'+':'−')+' '+b+'/'+den+' = □/'+den;
+    return Q('Adding & subtracting fractions','Fill in the missing number: '+text,ans,'The denominators are the same, so just '+(add?'add':'subtract')+' the numerators: '+a+' '+(add?'+':'−')+' '+b+' = '+ans+'.');
+  });
+
+  T('n_fracdiff','number',2,2,function(t,s){
+    var d1, d2, L;
+    do{ d1=choice([2,3,4,5,6,8,10]); d2=choice([2,3,4,5,6,8,10,12]); L=lcm(d1,d2); }while(d1===d2 || L>24);
+    var a=randInt(1,d1-1), b=randInt(1,d2-1), A=a*(L/d1), B=b*(L/d2), add=Math.random()<0.5||A===B;
+    if(!add && A<B){ var tt=a; a=b; b=tt; tt=d1; d1=d2; d2=tt; tt=A; A=B; B=tt; }
+    var ans=add?A+B:A-B;
+    var text=a+'/'+d1+' '+(add?'+':'−')+' '+b+'/'+d2+' = □/'+L;
+    return Q('Adding & subtracting fractions','Fill in the missing number: '+text,ans,
+      'Change both fractions to '+L+'ths: '+a+'/'+d1+' = '+A+'/'+L+' and '+b+'/'+d2+' = '+B+'/'+L+'. Then '+A+' '+(add?'+':'−')+' '+B+' = '+ans+'.');
+  });
+
+  T('n_fdp','number',0,2,function(t,s){
+    var F0=[[1,2],[1,4],[3,4],[1,10],[3,10],[7,10],[9,10]];
+    var F1=F0.concat([[1,5],[2,5],[3,5],[4,5],[1,100],[17,100],[3,100],[43,100]]);
+    var F2=F1.concat([[1,8],[3,8],[5,8],[7,8],[1,20],[3,20],[7,20],[1,25],[9,25],[11,50]]);
+    var fr=choice(t===0?F0:(t===1?F1:F2)), dec=clean(fr[0]/fr[1]), pct=clean(dec*100);
+    var f=t===0?0:randInt(0,t===1?3:4);
+    if(f===4 && !Number.isInteger(pct)) f=1;
+    var fs=fr[0]+'/'+fr[1];
+    if(f===0) return Q('Fractions & decimals','Write '+fs+' as a decimal.',dec,fs+' = '+fr[0]+' ÷ '+fr[1]+' = '+fmtNum(dec)+'.');
+    if(f===1) return Q('Fractions & percentages','Write '+fs+' as a percentage.',pct,fs+' = '+fmtNum(dec)+' = '+fmtNum(pct)+'%.');
+    if(f===2) return Q('Decimals & percentages','Write '+fmtNum(dec)+' as a percentage.',pct,'Multiply by 100: '+fmtNum(dec)+' × 100 = '+fmtNum(pct)+'%.');
+    if(f===3) return Q('Decimals & percentages','Write '+fmtNum(pct)+'% as a decimal.',dec,'Divide by 100: '+fmtNum(pct)+' ÷ 100 = '+fmtNum(dec)+'.');
+    return TXT('Percentages & fractions','Write '+pct+'% as a fraction in its simplest form.',fs,pct+'% = '+pct+'/100 = '+fs+'.');
+  });
+
+  T('n_pct','number',1,2,function(t,s){
+    var P = t===1 ? [[10,50,25],[10,20,25,50,75,1],[5,15,30,40,60,75]][s] : [[10,20,25,5,50],[15,35,45,60,70,1],[12.5,17.5,65,85,95,2.5]][s];
+    var pct=choice(P), p10=Math.round(pct*10), unit=1000/gcd(p10,1000), maxB=t===1?400:1000;
+    var k=randInt(1,Math.max(1,Math.floor(maxB/unit))), base=unit*k;
+    if(base<20) base*=randInt(2,5);
+    var ans=clean(base*pct/100), money=Math.random()<0.4;
+    return Q('Percentages','What is '+pct+'% of '+(money?'£':'')+base+'?',ans,
+      (pct===50?'50% is a half: ':pct===25?'25% is a quarter: ':pct===10?'10% is a tenth: ':'')+base+' × '+pct+' ÷ 100 = '+fmtNum(ans)+'.',money?{money:true}:null);
+  });
+
+  T('n_pctwhat','number',2,2,function(t,s){
+    var pct=choice([10,20,25,40,50,75,5,30,60,80,15,90]), unit=100/gcd(pct,100);
+    var base=unit*randInt(2,Math.max(2,Math.floor(100/unit))), part=base*pct/100;
+    if(Math.random()<0.5) return Q('Percentages','What percentage of '+base+' is '+part+'?',pct,part+' ÷ '+base+' = '+fmtNum(part/base)+' = '+pct+'%.');
+    var n=nm();
+    return Q('Percentages',n+' scored '+part+' out of '+base+' in a test. What percentage of the marks did '+n+' get?',pct,part+'/'+base+' = '+fmtNum(part/base)+' = '+pct+'%.');
+  });
+
+  T('n_decaddsub','number',1,2,function(t,s){
+    var d=(t===2||s===2)?2:1, sc=Math.pow(10,d), mx=t===1?50:200;
+    var a=randInt(sc+1,mx*sc), b=randInt(sc+1,Math.floor(mx*sc/2));
+    if(t===2 && s===2) b=randInt(11,mx*5)*10;
+    if(Math.random()<0.5){ var sum=(a+b)/sc; return Q('Decimals',(a/sc).toFixed(d)+' + '+(b/sc).toFixed(d)+' = ?',clean(sum),'Line up the decimal points: '+(a/sc).toFixed(d)+' + '+(b/sc).toFixed(d)+' = '+sum.toFixed(d)+'.'); }
+    var hi=Math.max(a,b), lo=Math.min(a,b); if(hi===lo) hi+=7;
+    var dif=(hi-lo)/sc;
+    return Q('Decimals',(hi/sc).toFixed(d)+' − '+(lo/sc).toFixed(d)+' = ?',clean(dif),'Line up the decimal points: '+(hi/sc).toFixed(d)+' − '+(lo/sc).toFixed(d)+' = '+dif.toFixed(d)+'.');
+  });
+
+  T('n_decmul','number',1,2,function(t,s){
+    var a, b, dA, text, ans;
+    if(t===1 || s===0){ do{ a=randInt(2,99); }while(a%10===0); dA=1; b=randInt(2,9); ans=a*b/10; text=(a/10).toFixed(1)+' × '+b+' = ?'; }
+    else if(s===1){ do{ a=randInt(101,999); }while(a%10===0); dA=2; b=randInt(2,9); ans=a*b/100; text=(a/100).toFixed(2)+' × '+b+' = ?'; }
+    else { a=randInt(2,9); b=randInt(2,9); ans=a*b/100; text='0.'+a+' × 0.'+b+' = ?'; }
+    return Q('Multiplying decimals',text,clean(ans),text.replace('?',fmtNum(ans))+'. Tip: multiply as whole numbers, then put the decimal point back.');
+  });
+
+  T('n_bodmas','number',2,2,function(t,s){
+    var a=randInt(2,12), b=randInt(2,12), c=randInt(2,12), f=randInt(0,5), text, ans, ex;
+    if(f===0){ text=a+' + '+b+' × '+c; ans=a+b*c; ex='Multiply first: '+b+' × '+c+' = '+(b*c)+', then add '+a+'.'; }
+    else if(f===1){ if(a*b<=c) c=randInt(1,a*b-1); text=a+' × '+b+' − '+c; ans=a*b-c; ex='Multiply first: '+a+' × '+b+' = '+(a*b)+', then subtract '+c+'.'; }
+    else if(f===2){ text='('+a+' + '+b+') × '+c; ans=(a+b)*c; ex='Brackets first: '+a+' + '+b+' = '+(a+b)+', then × '+c+'.'; }
+    else if(f===3){ text=a+' × ('+b+' + '+c+')'; ans=a*(b+c); ex='Brackets first: '+b+' + '+c+' = '+(b+c)+', then '+a+' × '+(b+c)+'.'; }
+    else if(f===4){ var x=c*b; text=x+' ÷ '+c+' + '+a; ans=b+a; ex='Divide first: '+x+' ÷ '+c+' = '+b+', then add '+a+'.'; }
+    else { var d=randInt(2,9); text=a+' × '+b+' + '+c+' × '+d; ans=a*b+c*d; ex='Do both multiplications first: '+(a*b)+' + '+(c*d)+'.'; }
+    return Q('Order of operations','Work out: '+text,ans,ex+' Answer: '+ans+'.');
+  });
+
+  T('n_squares','number',1,2,function(t,s){
+    var f=t===1?randInt(0,2):randInt(0,5), n;
+    if(f===0){ n=randInt(2,12); return Q('Square numbers','What is '+n+' squared?',n*n,n+' × '+n+' = '+(n*n)); }
+    if(f===1){ n=randInt(2,12); return Q('Square numbers','What is '+n+'²?',n*n,n+'² means '+n+' × '+n+' = '+(n*n)); }
+    if(f===2){ n=randInt(2,12); return Q('Square roots','What is the square root of '+(n*n)+'?',n,n+' × '+n+' = '+(n*n)+', so √'+(n*n)+' = '+n); }
+    if(f===3){ n=choice([2,3,4,5,10]); return Q('Cube numbers','What is '+n+'³?',n*n*n,n+' × '+n+' × '+n+' = '+(n*n*n)); }
+    if(f===4){ var a=randInt(2,9), b=randInt(2,9); return Q('Square numbers','What is '+a+'² + '+b+'²?',a*a+b*b,(a*a)+' + '+(b*b)+' = '+(a*a+b*b)); }
+    var p=randInt(2,10), q=randInt(2,10); return Q('Square roots','What is √'+(p*p)+' + √'+(q*q)+'?',p+q,p+' + '+q+' = '+(p+q));
+  });
+
+  T('n_factors','number',1,2,function(t,s){
+    var f=t===1?choice([0,3]):randInt(0,3);
+    if(f===0){
+      var n=choice(t===1?[6,8,10,12,15,16,18,20,24]:[24,28,30,36,40,42,48,60]), fs=[];
+      for(var i=1;i<=n;i++){ if(n%i===0) fs.push(i); }
+      return Q('Factors','How many factors does '+n+' have?',fs.length,'The factors of '+n+' are '+fs.join(', ')+' — that is '+fs.length+' factors.');
+    }
+    if(f===1){
+      var g=randInt(2,12), m, k; do{ m=randInt(2,6); k=randInt(2,6); }while(m===k || gcd(m,k)!==1);
+      return Q('Factors','What is the highest common factor of '+(g*m)+' and '+(g*k)+'?',g,'The biggest number that divides into both '+(g*m)+' and '+(g*k)+' is '+g+'.');
+    }
+    if(f===2){
+      var a, b, L; do{ a=randInt(2,12); b=randInt(2,12); L=lcm(a,b); }while(a===b || L>72 || L===Math.max(a,b));
+      return Q('Multiples','What is the lowest common multiple of '+a+' and '+b+'?',L,L+' is the smallest number in both the '+a+' times table and the '+b+' times table.');
+    }
+    var N=choice([24,30,36,40,42,48,54,56,60,72]), facs=[], non=[];
+    for(var j=2;j<N;j++){ if(N%j===0) facs.push(j); else if(j<=20) non.push(j); }
+    var fac=choice(facs.filter(function(x){ return x>2; }).length?facs.filter(function(x){ return x>2; }):facs);
+    return MC('Factors','Which of these numbers is a factor of '+N+'?',String(fac),sample(non,3).map(String),N+' ÷ '+fac+' = '+(N/fac)+' exactly, so '+fac+' is a factor.');
+  });
+
+  T('n_multiples','number',0,2,function(t,s){
+    var f=randInt(0,t===0?2:3), n=randInt(2,12);
+    if(f===0){ var k=randInt(3,12); return Q('Multiples','What is the '+ordinal(k)+' multiple of '+n+'?',n*k,n+' × '+k+' = '+(n*k)); }
+    if(f===1){
+      n=randInt(3,12);
+      var m=n*randInt(3,t===0?10:15), non=[], x;
+      while(non.length<3){ x=m+randInt(-9,9); if(x>0 && x%n!==0 && non.indexOf(x)===-1) non.push(x); }
+      return MC('Multiples','Which of these numbers is a multiple of '+n+'?',String(m),non.map(String),m+' ÷ '+n+' = '+(m/n)+' exactly, so '+m+' is in the '+n+' times table.');
+    }
+    if(f===2){ var lim=randInt(20,t===0?80:150), first=(Math.floor(lim/n)+1)*n; return Q('Multiples','What is the first multiple of '+n+' that is bigger than '+lim+'?',first,'Count on in '+n+'s: '+(first-n)+', '+first+'. '+first+' is the first one past '+lim+'.'); }
+    var a, b, L; do{ a=randInt(2,10); b=randInt(2,10); L=lcm(a,b); }while(a===b || L>60 || L===Math.max(a,b));
+    return Q('Multiples','What is the smallest number that is a multiple of both '+a+' and '+b+'?',L,L+' is in both the '+a+' and '+b+' times tables.');
+  });
+
+  T('n_primes','number',1,2,function(t,s){
+    var f=t===1?choice([0,2]):randInt(0,2), comps=[9,15,21,25,27,33,35,39,45,49,51,55,57,63,65,69,77,81,85,87,91,93,95];
+    var primes=[]; for(var i=2;i<(t===1?50:100);i++){ if(isPrime(i)) primes.push(i); }
+    if(f===0){
+      var p=choice(primes.filter(function(x){ return x>7; }));
+      return MC('Prime numbers','Which of these is a prime number?',String(p),sample(comps.filter(function(x){ return x<(t===1?60:100); }),3).map(String),p+' can only be divided by 1 and itself, so it is prime. The others all have other factors.');
+    }
+    if(f===1){
+      var lo=randInt(10,70), hi=lo+randInt(10,20), list=[];
+      for(var j=lo+1;j<hi;j++){ if(isPrime(j)) list.push(j); }
+      return Q('Prime numbers','How many prime numbers are there between '+lo+' and '+hi+'?',list.length,list.length?'They are '+listJoin(list.map(String))+'.':'There are none.');
+    }
+    var c=choice(comps.filter(function(x){ return x<(t===1?50:100); })), ps=sample(primes.filter(function(x){ return x>5; }),3);
+    var fx=2; while(c%fx!==0) fx++;
+    return MC('Prime numbers','Which of these is NOT a prime number?',String(c),ps.map(String),c+' is not prime because '+c+' ÷ '+fx+' = '+(c/fx)+'.');
+  });
+
+  T('n_negative','number',0,2,function(t,s){
+    var f=t===0?0:randInt(0,3), a, b, ans;
+    if(f===0){
+      a=randInt(t===0?1:-5, t===0?8:10); b=randInt(a+1, a+(t===0?6:12));
+      var up=Math.random()<0.5 && t>0;
+      if(up){ var st=a-b; return Q('Negative numbers','The temperature is '+fix(st,0)+'°C. It rises by '+(b)+' degrees. What is the temperature now?',st+b,fix(st,0)+' + '+b+' = '+fix(st+b,0)+'°C'); }
+      ans=a-b;
+      return Q('Negative numbers','The temperature is '+fix(a,0)+'°C. It falls by '+b+' degrees. What is the temperature now?',ans,'Count down '+b+' from '+fix(a,0)+': '+fix(ans,0)+'°C');
+    }
+    if(f===1){ a=-randInt(2,12); b=randInt(3,15); ans=a+b; return Q('Negative numbers','What is '+fix(a,0)+' + '+b+'?',ans,'Start at '+fix(a,0)+' and count up '+b+': '+fix(ans,0)+'.'); }
+    if(f===2){ a=randInt(1,8); b=randInt(a+2,a+12); ans=a-b; return Q('Negative numbers','What is '+a+' − '+b+'?',ans,'Start at '+a+' and count back '+b+', past zero: '+fix(ans,0)+'.'); }
+    a=-randInt(2,10); b=randInt(2,12);
+    return Q('Negative numbers','What is the difference between '+fix(a,0)+'°C and '+b+'°C?',b-a,'From '+fix(a,0)+' up to 0 is '+(-a)+', then up to '+b+' is '+b+' more: '+(-a)+' + '+b+' = '+(b-a)+' degrees.');
+  });
+
+  T('n_sequence','number',0,2,function(t,s){
+    var steps = t===0?[2,3,4,5,6,7,8,9,10,11,25,50,100]:(t===1?[6,7,8,9,11,12,15,19,25,0.5,0.2,1.5,2.5,0.1,250]:[0.3,0.25,0.4,1.25,0.05,0.75,13,17,23,1.1,0.6,-0]);
+    var step=choice(steps.filter(function(x){ return x>0; })), down=Math.random()<0.4, len=5, allowNeg=(t===2)||(t===1&&s===2), start;
+    var intStep=Number.isInteger(step);
+    if(down){ start = allowNeg && Math.random()<0.6 ? clean(step*randInt(1,3)) : clean(step*randInt(len,len+10)+(intStep?randInt(0,step-1):randInt(0,5))); }
+    else { start = allowNeg && Math.random()<0.4 ? clean(-step*randInt(1,4)) : clean(step*randInt(0,8)+(intStep?randInt(0,step-1):randInt(0,5))); }
+    var dlt=down?-step:step, terms=[];
+    for(var i=0;i<len;i++) terms.push(clean(start+dlt*i));
+    var ex='The numbers go '+(down?'down':'up')+' by '+fmtNum(step)+' each time.';
+    if(Math.random()<0.5){
+      return Q('Sequences','What is the next number in this sequence? '+terms.slice(0,4).map(fmtNum).join(', ')+', …',terms[4],ex+' '+fmtNum(terms[3])+' '+(down?'−':'+')+' '+fmtNum(step)+' = '+fmtNum(terms[4])+'.');
+    }
+    var mi=randInt(1,3);
+    return Q('Sequences','What is the missing number in this sequence? '+terms.map(function(v,k){ return k===mi?'□':fmtNum(v); }).join(', '),terms[mi],ex+' The missing number is '+fmtNum(terms[mi])+'.');
+  });
+
+  T('n_nth','number',2,2,function(t,s){
+    var a=randInt(1,12), d=randInt(2,9), n=choice([10,12,15,20,25,50,100]);
+    if(Math.random()<0.5){
+      var terms=[a,a+d,a+2*d,a+3*d];
+      return Q('Sequences','What is the '+ordinal(n)+' term of this sequence? '+terms.join(', ')+', …',a+(n-1)*d,'It goes up by '+d+'. The '+ordinal(n)+' term is '+a+' + '+(n-1)+' × '+d+' = '+(a+(n-1)*d)+'.');
+    }
+    var c=randInt(1,Math.min(d-1,6)), sub=Math.random()<0.5;
+    var val=sub?d*n-c:d*n+c;
+    return Q('Sequences','The rule for a sequence is: multiply the position number by '+d+' and then '+(sub?'subtract ':'add ')+c+'. What is the '+ordinal(n)+' term?',val,n+' × '+d+' = '+(n*d)+', then '+(sub?'− ':'+ ')+c+' = '+val+'.');
+  });
+
+  T('n_ratio','number',2,2,function(t,s){
+    var f=randInt(0,2), p=randInt(1,5), q=randInt(2,7); while(gcd(p,q)!==1||p===q){ p=randInt(1,5); q=randInt(2,7); }
+    var k=randInt(3,12), names=nms(2);
+    if(f===0){ var tot=(p+q)*k, big=Math.random()<0.5;
+      return Q('Ratio','Share '+tot+' sweets between '+names[0]+' and '+names[1]+' in the ratio '+p+':'+q+'. How many sweets does '+(big?names[1]:names[0])+' get?',(big?q:p)*k,
+        'There are '+(p+q)+' parts. '+tot+' ÷ '+(p+q)+' = '+k+' per part. '+(big?names[1]+' gets '+q:names[0]+' gets '+p)+' × '+k+' = '+((big?q:p)*k)+'.'); }
+    if(f===1){ var cols=sample(['red','blue','green','yellow','white','purple'],2);
+      return Q('Ratio','On a bracelet, for every '+p+' '+cols[0]+' beads there are '+q+' '+cols[1]+' beads. If there are '+(q*k)+' '+cols[1]+' beads, how many '+cols[0]+' beads are there?',p*k,
+        (q*k)+' ÷ '+q+' = '+k+' groups, and '+k+' × '+p+' = '+(p*k)+'.'); }
+    var sugar=k*10;
+    return Q('Ratio','A recipe uses flour and sugar in the ratio '+q+':'+p+'. How many grams of flour are needed for '+(p*sugar)+' g of sugar?',q*sugar,
+      (p*sugar)+' ÷ '+p+' = '+sugar+' g per part, so flour = '+q+' × '+sugar+' = '+(q*sugar)+' g.');
+  });
+
+  T('n_estimate','number',0,2,function(t,s){
+    var E, text, ex, dis;
+    if(t===0){
+      var a=randInt(2,9)*100+choice([-2,-1,1,2,3,-3,4,-4]), b=randInt(1,8)*100+choice([-2,-1,1,2,3,-3,4,-4]);
+      E=Math.round(a/100)*100+Math.round(b/100)*100; text='Which is the best estimate for '+a+' + '+b+'?';
+      ex=a+' is about '+(Math.round(a/100)*100)+' and '+b+' is about '+(Math.round(b/100)*100)+', so about '+E+'.';
+      dis=[E-200,E+200,E*10];
+    } else if(t===1){
+      var x=randInt(2,9)*10+choice([-1,1,-2,2]), y=randInt(2,9)*10+choice([-1,1,-2,2]);
+      var xr=Math.round(x/10)*10, yr=Math.round(y/10)*10; E=xr*yr; text='Which is the best estimate for '+x+' × '+y+'?';
+      ex=x+' ≈ '+xr+' and '+y+' ≈ '+yr+', so about '+xr+' × '+yr+' = '+commas(E)+'.';
+      dis=[E/10,E*10,E*2];
+    } else {
+      var u=randInt(3,9)+choice([-0.1,0.1,-0.2,0.2]), v=randInt(3,9)+choice([-0.1,0.1,0.2,-0.2]);
+      u=clean(u); v=clean(v); var ur=Math.round(u), vr=Math.round(v); E=ur*vr; text='Which is the best estimate for '+u.toFixed(1)+' × '+v.toFixed(1)+'?';
+      ex=u.toFixed(1)+' ≈ '+ur+' and '+v.toFixed(1)+' ≈ '+vr+', so about '+E+'.';
+      dis=[E/10,E*10,E+ur+vr+10];
+    }
+    return MC('Estimating',text,commas(E),dis.map(function(d){ return commas(clean(d)); }),ex);
+  });
+
+  T('n_missingmult','number',0,2,function(t,s){
+    var a=randInt(2,t===2?15:12), b=randInt(2,12), p=a*b, f=randInt(0,3), text, ans;
+    if(f===0){ text='□ × '+b+' = '+p; ans=a; }
+    else if(f===1){ text=a+' × □ = '+p; ans=b; }
+    else if(f===2){ text='□ ÷ '+b+' = '+a; ans=p; }
+    else { text=p+' ÷ □ = '+a; ans=b; }
+    return Q('Missing numbers','What number goes in the box? '+text,ans,text.replace('□',String(ans))+'.');
+  });
+
+  var ONES=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+  var TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+  function words99(n){ if(n<20) return ONES[n]; var o=n%10; return TENS[Math.floor(n/10)]+(o?'-'+ONES[o]:''); }
+  function words999(n){ var h=Math.floor(n/100), r=n%100, out=''; if(h) out=ONES[h]+' hundred'; if(r) out+=(h?' and ':'')+words99(r); return out; }
+  function numberWords(n){
+    if(n===0) return 'zero';
+    var m=Math.floor(n/1e6), th=Math.floor((n%1e6)/1000), rest=n%1000, parts=[];
+    if(m) parts.push(words999(m)+' million');
+    if(th) parts.push(words999(th)+' thousand');
+    if(rest) parts.push((parts.length && rest<100)?'and '+words99(rest):words999(rest));
+    var out=parts[0]||'';
+    for(var i=1;i<parts.length;i++) out+=(parts[i].indexOf('and ')===0?' ':', ')+parts[i];
+    return out;
+  }
+  T('n_words','number',0,2,function(t,s){
+    var len=t===0?(s===0?3:4):(t===1?randInt(5,6):randInt(6,7)), d=[];
+    for(var i=0;i<len;i++) d.push(i===0?randInt(1,9):(Math.random()<0.4?0:randInt(1,9)));
+    var n=Number(d.join(''));
+    return Q('Numbers in words','Write "'+numberWords(n)+'" in digits.',n,'"'+numberWords(n)+'" = '+commas(n)+'.');
+  });
+
+  T('n_doublehalf','number',0,1,function(t,s){
+    var dbl=Math.random()<0.5, n;
+    if(t===0){ n=dbl?randInt(12,s===2?499:99):randInt(6,s===2?249:49)*2; }
+    else { n=Math.random()<0.5?randInt(101,999)*(dbl?1:2):clean(randInt(11,99)/10*(dbl?1:2)); }
+    var ans=clean(dbl?n*2:n/2);
+    return Q(dbl?'Doubling':'Halving',dbl?'Double '+fmtNum(n)+'.':'What is half of '+fmtNum(n)+'?',ans,dbl?fmtNum(n)+' + '+fmtNum(n)+' = '+fmtNum(ans):fmtNum(n)+' ÷ 2 = '+fmtNum(ans));
+  });
+
+  T('n_decparts','number',1,2,function(t,s){
+    var f=randInt(0,2);
+    if(f===0){
+      if(Math.random()<0.5){ var h=randInt(1,9); return Q('Decimals','How many hundredths are there in 0.'+h+'?',h*10,'0.'+h+' = '+h+' tenths = '+(h*10)+' hundredths.'); }
+      var v=randInt(11,99); return Q('Decimals','How many tenths are there in '+(v/10).toFixed(1)+'?',v,(v/10).toFixed(1)+' = '+v+' tenths.');
+    }
+    if(f===1){
+      var o=randInt(0,9), te=randInt(0,9), hu=randInt(1,9), th=t===2?randInt(1,9):0, parts=[];
+      if(o) parts.push(o+' one'+(o>1?'s':''));
+      if(te) parts.push(te+' tenth'+(te>1?'s':''));
+      parts.push(hu+' hundredth'+(hu>1?'s':''));
+      if(th) parts.push(th+' thousandth'+(th>1?'s':''));
+      var val=clean(o+te/10+hu/100+th/1000);
+      return Q('Decimals','Write '+listJoin(parts)+' as a decimal.',val,listJoin(parts)+' = '+(th?val.toFixed(3):val.toFixed(2))+'.');
+    }
+    var x=clean(randInt(101,999)/100), add=choice([0.1,0.01,0.3,0.05,0.2]), up=Math.random()<0.5, ans=clean(up?x+add:x-add);
+    return Q('Decimals','What is '+fmtNum(add)+' '+(up?'more':'less')+' than '+x.toFixed(2)+'?',ans,x.toFixed(2)+' '+(up?'+':'−')+' '+fmtNum(add)+' = '+ans.toFixed(2)+'.');
+  });
+
+  T('n_algebra','number',2,2,function(t,s){
+    var f=randInt(0,4), n=randInt(2,15), a=randInt(2,9), b=randInt(2,20);
+    if(f===0) return Q('Algebra','If n + '+b+' = '+(n+b)+', what is n?',n,'n = '+(n+b)+' − '+b+' = '+n+'.');
+    if(f===1) return Q('Algebra','If '+a+'y = '+(a*n)+', what is y?',n,a+'y means '+a+' × y. y = '+(a*n)+' ÷ '+a+' = '+n+'.');
+    if(f===2) return Q('Algebra','If m ÷ '+a+' = '+n+', what is m?',a*n,'m = '+n+' × '+a+' = '+(a*n)+'.');
+    if(f===3) return Q('Algebra','What is the value of '+a+'k + '+b+' when k = '+n+'?',a*n+b,a+' × '+n+' + '+b+' = '+(a*n)+' + '+b+' = '+(a*n+b)+'.');
+    var c=randInt(1,9); return Q('Algebra','If '+a+'x − '+c+' = '+(a*n-c)+', what is x?',n,'Add '+c+': '+a+'x = '+(a*n)+'. Then divide by '+a+': x = '+n+'.');
+  });
+
+  T('n_mental','number',0,2,function(t,s){
+    var adj=choice([9,99,19,29,49,199,999].filter(function(x){ return t===0?x<200:true; })), base=adj+1, a=randInt(t===0?30:200, t===0?900:9999), add=Math.random()<0.5;
+    if(!add && a<=adj) a+=adj*2;
+    var ans=add?a+adj:a-adj;
+    return Q('Mental strategies',add?'Add '+adj+' to '+commas(a)+'.':'Subtract '+adj+' from '+commas(a)+'.',ans,
+      (add?'Add '+base+', then take away 1':'Subtract '+base+', then add 1 back')+': '+commas(a)+' '+(add?'+':'−')+' '+base+' '+(add?'−':'+')+' 1 = '+commas(ans)+'.');
+  });
+  // =====================================================================
+  // MEASURES, SHAPE & DATA
+  // =====================================================================
+  T('m_perim','measures',0,2,function(t,s){
+    var mx=[[10,12,15],[15,20,25],[25,40,60]][t][s], w=randInt(3,mx), h=randInt(2,mx); if(w===h) w++;
+    var P=2*(w+h);
+    var text=choice(['This rectangle is '+w+' cm by '+h+' cm. What is its perimeter, in cm?','What is the perimeter of this rectangle, in cm?','Find the perimeter of the rectangle shown. Give your answer in cm.']);
+    return Q('Perimeter',text,P,'Perimeter = '+w+' + '+h+' + '+w+' + '+h+' = '+P+' cm',{svg:rectSVG(w,h)});
+  });
+
+  T('m_area','measures',0,2,function(t,s){
+    var mx=[[8,10,12],[12,15,20],[20,30,45]][t][s], w=randInt(2,mx), h=randInt(2,mx); if(w===h) w++;
+    var text=choice(['This rectangle is '+w+' cm by '+h+' cm. What is its area, in cm²?','What is the area of this rectangle, in cm²?','Find the area of the rectangle shown. Give your answer in cm².']);
+    return Q('Area',text,w*h,'Area = length × width = '+w+' × '+h+' = '+(w*h)+' cm²',{svg:rectSVG(w,h)});
+  });
+
+  T('m_missingside','measures',1,2,function(t,s){
+    var a=randInt(3,t===1?12:20), b=randInt(3,t===1?12:20); if(a===b) b++;
+    if(Math.random()<0.5){ var A=a*b; return Q('Missing lengths','A rectangle has an area of '+A+' cm². One side is '+a+' cm long. How long is the other side, in cm?',b,A+' ÷ '+a+' = '+b+' cm'); }
+    var P=2*(a+b);
+    return Q('Missing lengths','A rectangle has a perimeter of '+P+' cm. Its length is '+a+' cm. What is its width, in cm?',b,'Length + width = '+P+' ÷ 2 = '+(a+b)+' cm, so the width is '+(a+b)+' − '+a+' = '+b+' cm');
+  });
+
+  T('m_square','measures',0,2,function(t,s){
+    var side=randInt(2,t===0?12:(t===1?15:25)), f=t===0?randInt(0,1):randInt(0,3);
+    if(f===0) return Q('Perimeter','A square has sides of '+side+' cm. What is its perimeter, in cm?',4*side,'4 × '+side+' = '+(4*side)+' cm');
+    if(f===1) return Q('Perimeter','A square has a perimeter of '+(4*side)+' cm. How long is each side, in cm?',side,(4*side)+' ÷ 4 = '+side+' cm');
+    if(f===2) return Q('Area','A square has sides of '+side+' cm. What is its area, in cm²?',side*side,side+' × '+side+' = '+(side*side)+' cm²');
+    return Q('Area','A square has a perimeter of '+(4*side)+' cm. What is its area, in cm²?',side*side,'Each side = '+(4*side)+' ÷ 4 = '+side+' cm. Area = '+side+' × '+side+' = '+(side*side)+' cm²');
+  });
+
+  T('m_regpoly','measures',0,2,function(t,s){
+    var shapes=[['equilateral triangle',3],['square',4],['regular pentagon',5],['regular hexagon',6],['regular octagon',8]];
+    if(t>=1) shapes.push(['regular heptagon',7],['regular decagon',10]);
+    var sh=choice(shapes), side=randInt(2,t===0?10:20), P=sh[1]*side;
+    if(t===0 || Math.random()<0.5) return Q('Perimeter',Art(sh[0])+' '+sh[0]+' has sides of '+side+' cm. What is its perimeter, in cm?',P,Art(sh[0])+' '+sh[0]+' has '+sh[1]+' equal sides: '+sh[1]+' × '+side+' = '+P+' cm');
+    return Q('Perimeter',Art(sh[0])+' '+sh[0]+' has a perimeter of '+P+' cm. How long is each side, in cm?',side,'It has '+sh[1]+' equal sides: '+P+' ÷ '+sh[1]+' = '+side+' cm');
+  });
+
+  T('m_lshape_area','measures',1,2,function(t,s){
+    var mx=t===1?12:18, W=randInt(7,mx), H=randInt(7,mx), cw=randInt(2,W-3), ch=randInt(2,H-3), ans=W*H-cw*ch;
+    return Q('Compound shapes','This L-shape is a '+W+' cm × '+H+' cm rectangle with a '+cw+' cm × '+ch+' cm corner cut out. What is its area, in cm²?',ans,
+      W+' × '+H+' = '+(W*H)+', and '+cw+' × '+ch+' = '+(cw*ch)+'. '+(W*H)+' − '+(cw*ch)+' = '+ans+' cm²',{svg:lShapeSVG(W,H,cw,ch)});
+  });
+
+  T('m_lshape_perim','measures',1,2,function(t,s){
+    var mx=t===1?12:18, W=randInt(7,mx), H=randInt(7,mx), cw=randInt(2,W-3), ch=randInt(2,H-3), P=2*(W+H);
+    return Q('Compound shapes','What is the perimeter of this L-shape, in cm?',P,
+      'The sides are '+W+', '+H+', '+(W-cw)+', '+ch+', '+cw+' and '+(H-ch)+' cm. Total = '+P+' cm (the same as a '+W+' × '+H+' rectangle).',{svg:lShapeSVG(W,H,cw,ch)});
+  });
+
+  T('m_triarea','measures',2,2,function(t,s){
+    var b=randInt(3,20), h=randInt(3,16); if((b*h)%2) b++;
+    return Q('Area of triangles','A triangle has a base of '+b+' cm and a perpendicular height of '+h+' cm. What is its area, in cm²?',b*h/2,'Area = base × height ÷ 2 = '+b+' × '+h+' ÷ 2 = '+(b*h/2)+' cm²');
+  });
+
+  T('m_volume','measures',1,2,function(t,s){
+    var l=randInt(2,t===1?6:10), w=randInt(2,t===1?5:8), h=randInt(2,t===1?4:8), V=l*w*h, f=t===1?randInt(0,1):randInt(0,2);
+    if(f===0) return Q('Volume','A cuboid is built from 1 cm cubes. It is '+l+' cubes long, '+w+' cubes wide and '+h+' cubes high. How many cubes are used?',V,l+' × '+w+' × '+h+' = '+V+' cubes');
+    if(f===1) return Q('Volume','A box measures '+l+' cm × '+w+' cm × '+h+' cm. What is its volume, in cm³?',V,l+' × '+w+' × '+h+' = '+V+' cm³');
+    return Q('Volume','A cuboid has a volume of '+V+' cm³. It is '+l+' cm long and '+w+' cm wide. How tall is it, in cm?',h,V+' ÷ ('+l+' × '+w+') = '+V+' ÷ '+(l*w)+' = '+h+' cm');
+  });
+
+  var ANGLE_DESC={'Acute':'less than 90°','Right angle':'exactly 90°','Obtuse':'between 90° and 180°','Reflex':'between 180° and 360°'};
+  T('m_angletype','measures',0,2,function(t,s){
+    var kinds=t===0?['Acute','Right angle','Obtuse']:['Acute','Right angle','Obtuse','Reflex'];
+    var kind=choice(kinds), deg;
+    if(kind==='Acute') deg=randInt(15,80); else if(kind==='Right angle') deg=90; else if(kind==='Obtuse') deg=randInt(100,170); else deg=randInt(195,340);
+    var others=kinds.filter(function(k){ return k!==kind; });
+    if(Math.random()<0.6 || kind==='Right angle'){
+      return MC('Angles',choice(['What type of angle is shown?','What type of angle is this?','Name the type of angle shown.']),kind,others,
+        'This angle is about '+deg+'°. '+(kind==='Right angle'?'A right angle':Art(kind)+' '+kind.toLowerCase()+' angle')+' is '+ANGLE_DESC[kind]+'.',{svg:angleSVG(deg)});
+    }
+    return MC('Angles','An angle measures '+deg+'°. What type of angle is it?',kind,others,Art(kind)+' '+kind.toLowerCase()+' angle is '+ANGLE_DESC[kind]+'.');
+  });
+
+  T('m_angleline','measures',1,2,function(t,s){
+    if(Math.random()<0.65){
+      var known=randInt(25,155);
+      return Q('Angles on a line',choice(['Angles on a straight line add up to 180°. What is the missing angle, in degrees?','What is the size of the missing angle, in degrees?']),180-known,'180 − '+known+' = '+(180-known)+'°',{svg:angleOnLineSVG(known)});
+    }
+    var a=randInt(25,80), b=randInt(25,80);
+    return Q('Angles on a line','Three angles sit on a straight line. Two of them are '+a+'° and '+b+'°. What is the third angle, in degrees?',180-a-b,'180 − '+a+' − '+b+' = '+(180-a-b)+'°');
+  });
+
+  T('m_anglepoint','measures',2,2,function(t,s){
+    if(Math.random()<0.6){
+      var a, b, c; do{ a=randInt(60,150); b=randInt(60,150); c=360-a-b; }while(c<30);
+      return Q('Angles around a point','Three angles meet at a point: '+a+'°, '+b+'° and a missing angle (shown dashed). What is the missing angle, in degrees?',c,'Angles around a point add up to 360°: 360 − '+a+' − '+b+' = '+c+'°',{svg:angleAroundPointSVG(a,b,c)});
+    }
+    var n=choice([3,4,5,6,8,9,10,12]);
+    return Q('Angles around a point',n+' equal angles meet at a point. How big is each angle, in degrees?',360/n,'360 ÷ '+n+' = '+(360/n)+'°');
+  });
+
+  T('m_triangle','measures',2,2,function(t,s){
+    var f=randInt(0,2);
+    if(f===0){ var a, b; do{ a=randInt(35,80); b=randInt(35,80); }while(180-a-b<40);
+      return Q('Angles in triangles','Two angles of this triangle are '+a+'° and '+b+'°. What is the third angle, in degrees?',180-a-b,'Angles in a triangle add up to 180°: 180 − '+a+' − '+b+' = '+(180-a-b)+'°',{svg:triangleSVG(a,b)}); }
+    if(f===1){ var top=randInt(10,70)*2;
+      return Q('Angles in triangles','An isosceles triangle has one angle of '+top+'° between its two equal sides. What size is each of the other two angles, in degrees?',(180-top)/2,'(180 − '+top+') ÷ 2 = '+((180-top)/2)+'°'); }
+    var x=randInt(20,70);
+    return Q('Angles in triangles','A right-angled triangle has one angle of '+x+'°. What is the size of the third angle, in degrees?',90-x,'180 − 90 − '+x+' = '+(90-x)+'°');
+  });
+
+  T('m_rightangles','measures',0,2,function(t,s){
+    var items=[
+      function(){ return Q('Turns & angles','How many degrees are there in a right angle?',90,'A right angle is a quarter turn: 90°.'); },
+      function(){ var n=randInt(2,6); return Q('Turns & angles','How many degrees are there in '+n+' right angles?',90*n,n+' × 90 = '+(90*n)+'°'); },
+      function(){ var tr=choice([['a half turn',180],['a full turn',360],['a three-quarter turn',270],['a quarter turn',90]]); return Q('Turns & angles','How many degrees are there in '+tr[0]+'?',tr[1],tr[0].charAt(0).toUpperCase()+tr[0].slice(1)+' is '+tr[1]+'°.'); },
+      function(){ var tr=choice([['a full turn',4],['a half turn',2],['a three-quarter turn',3]]); return Q('Turns & angles','How many right angles make '+tr[0]+'?',tr[1],tr[0].charAt(0).toUpperCase()+tr[0].slice(1)+' is '+tr[1]+' right angles.'); },
+      function(){
+        var from=randInt(1,12), jump=t===0?choice([3,6,9]):randInt(1,11), to=((from+jump-1)%12)+1;
+        return Q('Turns & angles','The minute hand of a clock turns clockwise from the '+from+' to the '+to+'. How many degrees does it turn?',jump*30,'Each number on a clock is 30° apart. '+jump+' × 30 = '+(jump*30)+'°');
+      }
+    ];
+    if(t>=1) items.push(function(){ var fr=choice([[8,45],[3,120],[6,60],[12,30],[10,36],[5,72]]); return Q('Turns & angles','How many degrees are there in 1/'+fr[0]+' of a full turn?',fr[1],'360 ÷ '+fr[0]+' = '+fr[1]+'°'); });
+    return choice(items)();
+  });
+
+  T('m_compass','measures',0,2,function(t,s){
+    var d4=['North','East','South','West'], d8=['North','North-East','East','South-East','South','South-West','West','North-West'];
+    var use8=t>=1 && Math.random()<0.5, dirs=use8?d8:d4, stepDeg=use8?45:90, start=randInt(0,dirs.length-1);
+    var deg=choice(use8?[45,90,135,180,225,270]:[90,180,270]), cw=Math.random()<0.5;
+    var n=deg/stepDeg, end=((start+(cw?n:-n))%dirs.length+dirs.length)%dirs.length, who=nm();
+    var named={90:'a quarter turn',180:'a half turn',270:'a three-quarter turn'}, phrase;
+    if(named[deg] && Math.random()<0.5) phrase='makes '+named[deg]+' '+(cw?'clockwise':'anticlockwise');
+    else phrase='turns '+deg+'° '+(cw?'clockwise':'anticlockwise');
+    var others=dirs.filter(function(d){ return d!==dirs[end]; });
+    return MC('Compass directions',who+' is facing '+dirs[start]+' and '+phrase+'. Which direction is '+who+' facing now?',dirs[end],sample(others,3),
+      'Turning '+deg+'° '+(cw?'clockwise':'anticlockwise')+' from '+dirs[start]+' ends at '+dirs[end]+'.');
+  });
+
+  var DUR_CTX=[
+    {s:'A swimming lesson',st:'starts',stQ:'start',d:'lasts',eQ:'finish',eS:'finishes'},
+    {s:'A football match',st:'kicks off',stQ:'kick off',d:'lasts',eQ:'finish',eS:'finishes'},
+    {s:'A film',st:'starts',stQ:'start',d:'lasts',eQ:'end',eS:'ends'},
+    {s:'A bus journey',st:'begins',stQ:'begin',d:'takes',eQ:'end',eS:'ends'},
+    {s:'A piano lesson',st:'starts',stQ:'start',d:'lasts',eQ:'finish',eS:'finishes'},
+    {s:'A birthday party',st:'starts',stQ:'start',d:'lasts',eQ:'finish',eS:'finishes'},
+    {s:'A cake',st:'goes into the oven',stQ:'go into the oven',d:'bakes for',eQ:'come out of the oven',eS:'comes out of the oven'},
+    {s:'A school concert',st:'begins',stQ:'begin',d:'lasts',eQ:'end',eS:'ends'},
+    {s:'A ferry crossing',st:'leaves the harbour',stQ:'leave the harbour',d:'takes',eQ:'arrive',eS:'arrives'},
+    {s:'A drama rehearsal',st:'starts',stQ:'start',d:'lasts',eQ:'finish',eS:'finishes'}
+  ];
+  T('m_duration','measures',0,2,function(t,s){
+    var c=choice(DUR_CTX), sh=randInt(7,18), sm=t===0?(s===0?randInt(0,3)*15:randInt(0,11)*5):(t===1?randInt(0,11)*5:randInt(0,59));
+    var dur=t===0?choice([15,30,45,60,75,90,105,120]):(t===1?randInt(4,30)*5:randInt(25,200));
+    var endT=sh*60+sm+dur, eh=Math.floor(endT/60), em=endT%60, f=randInt(0,t===0?1:2);
+    if(f===0) return TXT('Time',c.s+' '+c.st+' at '+hhmm(sh,sm)+' and '+c.d+' '+durWords(dur)+'. What time does it '+c.eQ+'? (Write it like 14:30)',hhmm(eh,em),hhmm(sh,sm)+' + '+durWords(dur)+' = '+hhmm(eh,em)+'.',timeAccept(eh,em));
+    if(f===1) return Q('Time',c.s+' '+c.st+' at '+hhmm(sh,sm)+' and '+c.eS+' at '+hhmm(eh,em)+'. How long is that, in minutes?',dur,'From '+hhmm(sh,sm)+' to '+hhmm(eh,em)+' is '+durWords(dur)+' = '+dur+' minutes.');
+    return TXT('Time',c.s+' '+c.eS+' at '+hhmm(eh,em)+'. It '+c.d+' '+durWords(dur)+'. What time did it '+c.stQ+'? (Write it like 14:30)',hhmm(sh,sm),hhmm(eh,em)+' − '+durWords(dur)+' = '+hhmm(sh,sm)+'.',timeAccept(sh,sm));
+  });
+
+  T('m_24h','measures',1,2,function(t,s){
+    var pm=Math.random()<0.7, h12=randInt(1,11), m=t===1?randInt(0,11)*5:randInt(0,59), h24=pm?h12+12:h12, mm=String(m).padStart(2,'0');
+    if(Math.random()<0.5) return TXT('24-hour time','Write '+h12+':'+mm+' '+(pm?'pm':'am')+' in 24-hour time.',hhmm(h24,m),h12+':'+mm+' '+(pm?'pm':'am')+' = '+hhmm(h24,m)+(pm?' (add 12 to the hour).':'.'),timeAccept(h24,m));
+    var correct=h12+':'+mm+' '+(pm?'pm':'am'), alt1=h12+':'+mm+' '+(pm?'am':'pm'), alt2=(((h12+1)%12)||12)+':'+mm+' '+(pm?'pm':'am'), alt3=(((h12+9)%12)||12)+':'+mm+' '+(pm?'pm':'am');
+    return MC('24-hour time','What is '+hhmm(h24,m)+' in 12-hour time?',correct,[alt1,alt2,alt3],hhmm(h24,m)+' is '+correct+(pm?' (take 12 off the hour).':'.'));
+  });
+
+  T('m_timeunits','measures',0,2,function(t,s){
+    var L=[
+      function(){ var h=randInt(2,t===0?5:9); return Q('Units of time','How many minutes are there in '+h+' hours?',h*60,h+' × 60 = '+(h*60)); },
+      function(){ var m=randInt(2,t===0?5:10); return Q('Units of time','How many seconds are there in '+m+' minutes?',m*60,m+' × 60 = '+(m*60)); },
+      function(){ var d=randInt(2,t===0?4:7); return Q('Units of time','How many hours are there in '+d+' days?',d*24,d+' × 24 = '+(d*24)); },
+      function(){ var w=randInt(2,t===0?5:12); return Q('Units of time','How many days are there in '+w+' weeks?',w*7,w+' × 7 = '+(w*7)); },
+      function(){ var y=randInt(2,t===0?4:10); return Q('Units of time','How many months are there in '+y+' years?',y*12,y+' × 12 = '+(y*12)); },
+      function(){ var h=randInt(2,t===0?4:8); return Q('Units of time','How many hours is '+(h*60)+' minutes?',h,(h*60)+' ÷ 60 = '+h); },
+      function(){ var w=randInt(2,t===0?5:9); return Q('Units of time','How many weeks is '+(w*7)+' days?',w,(w*7)+' ÷ 7 = '+w); }
+    ];
+    if(t>=1){
+      L.push(function(){ var h=randInt(1,5); return Q('Units of time','How many minutes are there in '+h+'½ hours?',h*60+30,h+' hours = '+(h*60)+' minutes, plus 30 = '+(h*60+30)); });
+      L.push(function(){ var h=randInt(1,4), m=randInt(1,11)*5; return Q('Units of time','How many minutes are there in '+h+' hour'+(h>1?'s':'')+' '+m+' minutes?',h*60+m,(h*60)+' + '+m+' = '+(h*60+m)); });
+      L.push(function(){ var m=randInt(1,5), sec=randInt(1,11)*5; return Q('Units of time','How many seconds are there in '+m+' minute'+(m>1?'s':'')+' '+sec+' seconds?',m*60+sec,(m*60)+' + '+sec+' = '+(m*60+sec)); });
+    }
+    if(t===2){
+      L.push(function(){ var it=choice([['hours in a week',168,'7 × 24'],['seconds in an hour',3600,'60 × 60'],['minutes in a day',1440,'24 × 60']]); return Q('Units of time','How many '+it[0]+' are there?',it[1],it[2]+' = '+commas(it[1])); });
+      L.push(function(){ var y=randInt(2,4); return Q('Units of time','How many days are there in '+y+' years that are not leap years?',y*365,y+' × 365 = '+commas(y*365)); });
+    }
+    return choice(L)();
+  });
+
+  T('m_clock','measures',0,2,function(t,s){
+    var h=randInt(1,12), m=t===0?(s===0?randInt(0,3)*15:randInt(0,11)*5):(t===1?randInt(0,11)*5:randInt(0,59));
+    var ans=h+':'+String(m).padStart(2,'0'), acc=timeAccept(h,m).concat(timeAccept(h===12?0:h+12,m));
+    var words = m===0 ? h+" o'clock" : (m<=30 ? (m===15?'quarter':m===30?'half':m+' minute'+(m>1?'s':''))+' past '+h : (60-m===15?'quarter':(60-m)+' minute'+(60-m>1?'s':''))+' to '+(h%12+1));
+    return TXT('Telling the time',choice(['What time does this clock show? (Write it like 3:25)','Write the time shown on the clock (like 3:25).','What time is shown on this clock? (Write it like 3:25)']),ans,
+      'The minute hand shows '+m+' minutes and the hour hand is '+(m===0?'on':'after')+' the '+h+', so it is '+words+' ('+ans+').',acc,{svg:clockSVG(h,m)});
+  });
+
+  var DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  var MONTHS=[['January',31],['February',28],['March',31],['April',30],['May',31],['June',30],['July',31],['August',31],['September',30],['October',31],['November',30],['December',31]];
+  T('m_calendar','measures',0,2,function(t,s){
+    var f=randInt(0,t===0?1:2);
+    if(f===0){
+      var st=randInt(0,6), n=randInt(t===0?2:6, t===0?10:45), e=(st+n)%7;
+      return MC('Calendars','If today is '+DAYS[st]+', what day of the week will it be in '+n+' days?',DAYS[e],sample(DAYS.filter(function(d){ return d!==DAYS[e]; }),3),
+        n+' days is '+Math.floor(n/7)+' week'+(Math.floor(n/7)===1?'':'s')+' and '+(n%7)+' day'+(n%7===1?'':'s')+'. '+DAYS[st]+' + '+(n%7)+' day'+(n%7===1?'':'s')+' = '+DAYS[e]+'.');
+    }
+    if(f===1){
+      var mo=choice(MONTHS)[0], d1=randInt(1,10), gap=randInt(t===0?2:5,t===0?14:18), d2=d1+gap, sd=randInt(0,6), ed=(sd+gap)%7;
+      return MC('Calendars','The '+ordinal(d1)+' of '+mo+' is a '+DAYS[sd]+'. What day of the week is the '+ordinal(d2)+' of '+mo+'?',DAYS[ed],sample(DAYS.filter(function(d){ return d!==DAYS[ed]; }),3),
+        'The '+ordinal(d2)+' is '+gap+' days later. '+gap+' days = '+Math.floor(gap/7)+' week'+(Math.floor(gap/7)===1?'':'s')+' and '+(gap%7)+' day'+(gap%7===1?'':'s')+', so it is a '+DAYS[ed]+'.');
+    }
+    var M=choice(MONTHS);
+    return Q('Calendars','How many days are there in '+M[0]+(M[0]==='February'?' in a year that is not a leap year':'')+'?',M[1],M[0]+' has '+M[1]+' days. ("30 days has September, April, June and November…")');
+  });
+
+  var UNITS=[{b:'m',sm:'cm',f:100,bn:'metres',sn:'centimetres'},{b:'km',sm:'m',f:1000,bn:'kilometres',sn:'metres'},{b:'kg',sm:'g',f:1000,bn:'kilograms',sn:'grams'},{b:'l',sm:'ml',f:1000,bn:'litres',sn:'millilitres'},{b:'cm',sm:'mm',f:10,bn:'centimetres',sn:'millimetres'}];
+  T('m_convert','measures',0,2,function(t,s){
+    var u=choice(UNITS), big;
+    if(t===0) big = s===0 ? randInt(2,9) : (Math.random()<0.5 ? randInt(2,12) : randInt(1,9)+0.5);
+    else if(t===1) big = clean(randInt(11,99)/10);
+    else { var dmax=u.f===10?1:(u.f===100?2:3), dp=randInt(1,dmax); big=clean(randInt(Math.pow(10,dp)+1, 20*Math.pow(10,dp))/Math.pow(10,dp)); }
+    var small=clean(big*u.f);
+    if(Math.random()<0.5) return Q('Converting units',choice(['How many '+u.sn+' are there in '+fmtNum(big)+' '+u.b+'?','Convert '+fmtNum(big)+' '+u.b+' to '+u.sn+'.']),small,fmtNum(big)+' × '+u.f+' = '+fmtNum(small)+' '+u.sm+' (1 '+u.b+' = '+u.f+' '+u.sm+')');
+    return Q('Converting units',choice(['Convert '+fmtNum(small)+' '+u.sm+' to '+u.bn+'.','Write '+fmtNum(small)+' '+u.sm+' in '+u.bn+'.']),big,fmtNum(small)+' ÷ '+u.f+' = '+fmtNum(big)+' '+u.b+' (1 '+u.b+' = '+u.f+' '+u.sm+')');
+  });
+
+  T('m_money','measures',0,2,function(t,s){
+    var f=randInt(0,3);
+    if(f===0){ var p=randInt(101,t===0?999:4999); return Q('Money','How many pence are there in '+gbp(p)+'?',p,gbp(p)+' = '+p+'p (there are 100p in £1)'); }
+    if(f===1){ var q=randInt(101,t===0?999:4999); return Q('Money','Write '+commas(q)+'p in pounds.',q/100,q+'p ÷ 100 = '+gbp(q),{money:true}); }
+    if(f===2){ var coin=choice(t===0?[2,5,10,20,50]:[5,10,20,50]), total=coin*randInt(3,t===0?20:60); if(total%100===0 || total<100) total=Math.ceil(total/100)*100;
+      var cnt=total/coin; return Q('Money','How many '+coin+'p coins make '+gbp(total)+'?',cnt,gbp(total)+' = '+total+'p. '+total+' ÷ '+coin+' = '+cnt+' coins'); }
+    var coins=[[200,'£2'],[100,'£1'],[50,'50p'],[20,'20p'],[10,'10p'],[5,'5p'],[2,'2p'],[1,'1p']], pick=sample(coins,randInt(2,t===0?3:4)).sort(function(a,b){ return b[0]-a[0]; });
+    var tot=0, parts=[], desc=[], who=nm();
+    pick.forEach(function(c){ var n=randInt(1,t===0?3:5); tot+=n*c[0]; parts.push(n+' × '+c[1]); desc.push((n===1?'one':n)+' '+c[1]+' coin'+(n>1?'s':'')); });
+    return Q('Money',who+' has '+listJoin(desc)+'. How much money is that altogether?',tot/100,
+      parts.join(' + ')+' = '+gbp(tot),{money:true});
+  });
+
+  T('m_scale','measures',0,2,function(t,s){
+    var steps=t===0?[1,2,5,10,20,25,50,100]:(t===1?[0.1,0.2,0.5,2,5,25,50,250]:[0.01,0.02,0.05,0.25,0.5,0.1]);
+    var step=choice(steps), n=choice([4,5,8,10]), startMult=randInt(0,3)*n, start=clean(step*startMult);
+    var pos=randInt(1,n-1); if(n%2===0 && n>=6 && pos===n/2) pos=n/2+1;
+    var half=(t===2 && s===2 && Math.random()<0.5); if(half) pos=pos-0.5;
+    var val=clean(start+step*pos), ctxs=[['','']];
+    if(step<=0.5) ctxs.push(['kg','The scale shows the mass of a parcel. '],['l','The scale shows how much water is in a bucket. ']);
+    else if(step>=5) ctxs.push(['g','The scale shows the mass of a bag of flour. '],['ml','The scale shows how much juice is in a jug. ']);
+    else ctxs.push(['cm','The scale shows the length of a ribbon. ']);
+    var ctx=choice(ctxs);
+    return Q('Reading scales',ctx[1]+'What value is the arrow pointing to'+(ctx[0]?' (in '+ctx[0]+')':'')+'?',val,
+      'Each small step is worth '+fmtNum(step)+(half?' and the arrow is halfway between two marks':'')+'. Counting on from '+fmtNum(start)+' gives '+fmtNum(val)+(ctx[0]?' '+ctx[0]:'')+'.',{svg:numberLineSVG(start,step,n,pos,ctx[0])});
+  });
+
+  function niceData(n,lo,hi,divisible){
+    var vals=[], i, sum=0;
+    for(i=0;i<n-1;i++){ var v=randInt(lo,hi); vals.push(v); sum+=v; }
+    var last=randInt(lo,hi);
+    if(divisible){ last-=((sum+last)%n); if(last<lo) last+=n; }
+    vals.push(last);
+    return shuffle(vals);
+  }
+  var DATA_CTX=[['goals scored in some football matches','goals'],['points scored in some quiz rounds','points'],['books read by some pupils','books'],['heights of some sunflowers, in cm','cm'],['number of sunny days in some months','days'],['number of cars passing the school each hour','cars'],['scores in a spelling test','marks']];
+  T('m_mean','measures',1,2,function(t,s){
+    var n=choice([3,4,5]), c=choice(DATA_CTX), vals=niceData(n,t===1?2:10,t===1?20:60,true), sum=vals.reduce(function(a,b){ return a+b; },0);
+    return Q('Averages','Here are the '+c[0]+': '+vals.join(', ')+'. What is the mean?',sum/n,'Add them: '+vals.join(' + ')+' = '+sum+'. Divide by '+n+': '+sum+' ÷ '+n+' = '+(sum/n)+'.',Math.random()<0.4?{svg:barsSVG(vals)}:null);
+  });
+  T('m_range','measures',1,2,function(t,s){
+    var n=choice([4,5,6]), c=choice(DATA_CTX), vals=niceData(n,t===1?1:5,t===1?30:90,false), mx=Math.max.apply(null,vals), mn=Math.min.apply(null,vals);
+    if(mx===mn){ vals[0]+=3; mx=Math.max.apply(null,vals); }
+    return Q('Averages','Here are the '+c[0]+': '+vals.join(', ')+'. What is the range?',mx-mn,'Range = biggest − smallest = '+mx+' − '+mn+' = '+(mx-mn)+'.');
+  });
+  T('m_medmode','measures',2,2,function(t,s){
+    var c=choice(DATA_CTX);
+    if(Math.random()<0.5){
+      var n=choice([5,7]), vals=niceData(n,2,40,false), sorted=vals.slice().sort(function(a,b){ return a-b; }), med=sorted[(n-1)/2];
+      return Q('Averages','Here are the '+c[0]+': '+vals.join(', ')+'. What is the median?',med,'In order: '+sorted.join(', ')+'. The middle value is '+med+'.');
+    }
+    var mode=randInt(3,30), others=[]; while(others.length<4){ var v=randInt(2,35); if(v!==mode && others.indexOf(v)===-1) others.push(v); }
+    var list=shuffle(others.concat([mode,mode,Math.random()<0.5?mode:others[0]+0]));
+    var counts={}; list.forEach(function(v){ counts[v]=(counts[v]||0)+1; });
+    var best=Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; });
+    if(counts[best[0]]===counts[best[1]]){ list.push(mode); }
+    return Q('Averages','Here are the '+c[0]+': '+list.join(', ')+'. What is the mode?',mode,'The mode is the value that appears most often: '+mode+'.');
+  });
+
+  var BAR_CTX=[
+    {intro:'The bar chart shows how many pupils bought a school lunch each day.',labels:['Mon','Tue','Wed','Thu','Fri'],full:['Monday','Tuesday','Wednesday','Thursday','Friday'],
+      one:function(l){ return 'How many pupils bought a lunch on '+l+'?'; },diff:function(a,b){ return 'How many more pupils bought a lunch on '+a+' than on '+b+'?'; },tot:'How many lunches were bought altogether that week?',most:'On which day were the most lunches bought?'},
+    {intro:'The bar chart shows how many books five pupils read this term.',labels:null,
+      one:function(l){ return 'How many books did '+l+' read?'; },diff:function(a,b){ return 'How many more books did '+a+' read than '+b+'?'; },tot:'How many books did the five pupils read altogether?',most:'Who read the most books?'},
+    {intro:'The bar chart shows the favourite pets of the pupils in a school.',labels:['Cat','Dog','Fish','Bird','Horse'],full:['cat','dog','fish','bird','horse'],
+      one:function(l){ return 'How many pupils chose '+l+'?'; },diff:function(a,b){ return 'How many more pupils chose '+a+' than '+b+'?'; },tot:'How many pupils took part altogether?',most:'Which pet was the most popular?'},
+    {intro:'The bar chart shows how many tickets were sold for the school show each night.',labels:['Mon','Tue','Wed','Thu','Fri'],full:['Monday','Tuesday','Wednesday','Thursday','Friday'],
+      one:function(l){ return 'How many tickets were sold on '+l+'?'; },diff:function(a,b){ return 'How many more tickets were sold on '+a+' than on '+b+'?'; },tot:'How many tickets were sold altogether?',most:'On which night were the most tickets sold?'}
+  ];
+  T('m_barchart','measures',0,2,function(t,s){
+    var c=choice(BAR_CTX), labels=c.labels?c.labels.slice():sample(NAMES.filter(function(x){ return x.length<=5; }),5), full=c.full?c.full.slice():labels.slice();
+    var step=t===0?choice([2,5]):(t===1?choice([5,10]):choice([10,20,25])), unit=(s>=1 && t>=1)?step/2:step, maxU=Math.round(step*6/unit), vals=[], i;
+    for(i=0;i<5;i++) vals.push(unit*randInt(1,maxU));
+    var mx=Math.max.apply(null,vals);
+    if(vals.filter(function(v){ return v===mx; }).length>1){ vals[vals.indexOf(mx)]=mx+unit; mx+=unit; }
+    var top=Math.ceil(mx/step)*step, svg=barChartSVG(labels,vals,step,top), f=randInt(0,3), a, b;
+    if(f===0){ i=randInt(0,4); return Q('Bar charts',c.intro+' '+c.one(full[i]),vals[i],'The bar for '+full[i]+' reaches '+vals[i]+'. Each line on the scale is worth '+step+'.',{svg:svg}); }
+    if(f===1){ do{ a=randInt(0,4); b=randInt(0,4); }while(vals[a]<=vals[b]); return Q('Bar charts',c.intro+' '+c.diff(full[a],full[b]),vals[a]-vals[b],full[a]+' = '+vals[a]+', '+full[b]+' = '+vals[b]+'. '+vals[a]+' − '+vals[b]+' = '+(vals[a]-vals[b])+'.',{svg:svg}); }
+    if(f===2){ var tot=vals.reduce(function(x,y){ return x+y; },0); return Q('Bar charts',c.intro+' '+c.tot,tot,vals.join(' + ')+' = '+tot+'.',{svg:svg}); }
+    var win=full[vals.indexOf(mx)];
+    return MC('Bar charts',c.intro+' '+c.most,win,sample(full.filter(function(x){ return x!==win; }),3),'The tallest bar is '+win+' with '+mx+'.',{svg:svg});
+  });
+
+  T('m_pie','measures',2,2,function(t,s){
+    var tot=choice([24,36,40,60,72,90,120]), f=randInt(0,1);
+    if(f===0){
+      var fr=choice([[1,2],[1,4],[3,4],[1,3],[2,3],[1,6],[1,5],[1,8]].filter(function(x){ return tot%x[1]===0; }));
+      var ctx=choice(['walk to school','have a packed lunch','chose football','have a pet dog','like maths best']);
+      return Q('Pie charts','A pie chart shows information about '+tot+' pupils. '+fr[0]+'/'+fr[1]+' of the pie chart shows the pupils who '+ctx+'. How many pupils is that?',tot*fr[0]/fr[1],tot+' ÷ '+fr[1]+(fr[0]>1?' × '+fr[0]:'')+' = '+(tot*fr[0]/fr[1])+'.');
+    }
+    var ang=choice([30,45,60,90,120,180,72,36,40].filter(function(a){ return (tot*a)%360===0; }));
+    if(!ang) ang=90;
+    if((tot*ang)%360!==0){ tot=36; }
+    return Q('Pie charts','A pie chart shows how '+tot+' pupils travel to school. The "bus" slice has an angle of '+ang+'°. How many pupils travel by bus?',tot*ang/360,ang+'° out of 360° is '+ang+'/360 of the pupils. '+tot+' × '+ang+' ÷ 360 = '+(tot*ang/360)+'.');
+  });
+
+  T('m_prob','measures',0,2,function(t,s){
+    var cols=sample(['red','blue','green','yellow','white','purple','orange'],2), r, b;
+    if(t<2 || Math.random()<0.3){
+      var kind=randInt(0,4);
+      if(kind===0){ r=0; b=randInt(3,12); } else if(kind===1){ r=randInt(3,12); b=0; } else if(kind===2){ r=b=randInt(2,8); } else if(kind===3){ r=randInt(6,15); b=randInt(1,Math.floor(r/3)); } else { b=randInt(6,15); r=randInt(1,Math.floor(b/3)); }
+      var words=['impossible','certain','even chance','likely','unlikely'], ans=words[kind];
+      var bag=[]; if(r) bag.push(r+' '+cols[0]); if(b) bag.push(b+' '+cols[1]);
+      var nice={impossible:'Impossible',certain:'Certain','even chance':'Even chance',likely:'Likely',unlikely:'Unlikely'};
+      return MC('Probability','A bag has '+listJoin(bag)+' counters in it. You pick one without looking. How likely is it that it is '+cols[0]+'?',nice[ans],
+        sample(['Impossible','Unlikely','Even chance','Likely','Certain'].filter(function(x){ return x!==nice[ans]; }),3),
+        'There '+(r===1?'is ':'are ')+r+' '+cols[0]+' out of '+(r+b)+' counters, so it is '+ans+'.');
+    }
+    r=randInt(1,9); b=randInt(1,9); var tot=r+b, g=gcd(r,tot);
+    return TXT('Probability','A bag has '+r+' '+cols[0]+' and '+b+' '+cols[1]+' counters. You pick one without looking. What is the probability that it is '+cols[0]+'? (Write it as a fraction)',(r/g)+'/'+(tot/g),
+      r+' of the '+tot+' counters are '+cols[0]+', so the probability is '+r+'/'+tot+(g>1?' = '+(r/g)+'/'+(tot/g):'')+'.',[r+'/'+tot]);
+  });
+
+  T('m_coords','measures',2,2,function(t,s){
+    var f=randInt(0,2), x=randInt(0,8), y=randInt(0,8);
+    if(f===0){ var lab=choice(['A','B','P','Q','R']);
+      return TXT('Coordinates','What are the coordinates of point '+lab+'? (Write them like (2,5))','('+x+','+y+')','Go across first, then up: '+x+' across and '+y+' up gives ('+x+','+y+').',[],{svg:gridSVG(x,y,lab)}); }
+    if(f===1){ var dx=randInt(-4,4), dy=randInt(-4,4); if(!dx&&!dy) dx=2; x=randInt(Math.max(0,-dx),Math.min(8,8-dx)); y=randInt(Math.max(0,-dy),Math.min(8,8-dy));
+      var mv=[]; if(dx) mv.push(Math.abs(dx)+' square'+(Math.abs(dx)>1?'s':'')+' '+(dx>0?'right':'left')); if(dy) mv.push(Math.abs(dy)+' square'+(Math.abs(dy)>1?'s':'')+' '+(dy>0?'up':'down'));
+      return TXT('Coordinates','Point A is at ('+x+','+y+'). It moves '+listJoin(mv)+'. What are its new coordinates?','('+(x+dx)+','+(y+dy)+')','Across: '+x+' → '+(x+dx)+'. Up: '+y+' → '+(y+dy)+'. New point: ('+(x+dx)+','+(y+dy)+').'); }
+    var x1=randInt(0,4), y1=randInt(0,4), w=randInt(2,4), h=Math.random()<0.5?w:randInt(2,4), shp=w===h?'square':'rectangle';
+    var pts=[[x1,y1],[x1,y1+h],[x1+w,y1+h],[x1+w,y1]], miss=randInt(0,3), given=pts.filter(function(p,i){ return i!==miss; });
+    return TXT('Coordinates','Three corners of a '+shp+' are at '+listJoin(given.map(function(p){ return '('+p[0]+','+p[1]+')'; }))+'. What are the coordinates of the fourth corner?','('+pts[miss][0]+','+pts[miss][1]+')','The fourth corner lines up with the others: ('+pts[miss][0]+','+pts[miss][1]+').');
+  });
+
+  T('m_shapes','measures',0,2,function(t,s){
+    var F=[
+      ['How many sides does a pentagon have?',5],['How many sides does a hexagon have?',6],['How many sides does an octagon have?',8],['How many sides does a quadrilateral have?',4],
+      ['How many faces does a cube have?',6],['How many edges does a cube have?',12],['How many vertices (corners) does a cube have?',8],
+      ['How many right angles does a rectangle have?',4],['How many lines of symmetry does a square have?',4],['How many lines of symmetry does a rectangle (that is not a square) have?',2],
+      ['How many faces does a square-based pyramid have?',5],['How many vertices does a triangle have?',3]
+    ];
+    if(t>=1) F=F.concat([['How many sides does a heptagon have?',7],['How many sides does a decagon have?',10],['How many faces does a triangular prism have?',5],['How many edges does a triangular prism have?',9],
+      ['How many vertices does a triangular prism have?',6],['How many edges does a square-based pyramid have?',8],['How many vertices does a square-based pyramid have?',5],['How many edges does a cuboid have?',12],
+      ['How many lines of symmetry does an equilateral triangle have?',3],['How many lines of symmetry does a regular hexagon have?',6],['How many lines of symmetry does a regular pentagon have?',5]]);
+    if(t>=2) F=F.concat([['How many faces does a tetrahedron (triangular-based pyramid) have?',4],['How many edges does a tetrahedron have?',6],['How many faces does a hexagonal prism have?',8],
+      ['How many lines of symmetry does a regular octagon have?',8],['What do the angles inside a triangle add up to, in degrees?',180],['What do the angles inside a quadrilateral add up to, in degrees?',360],
+      ['What is the order of rotational symmetry of a square?',4],['How big is each angle inside a regular hexagon, in degrees?',120],['How big is each angle inside an equilateral triangle, in degrees?',60]]);
+    if(Math.random()<0.3){
+      var P=[['triangle',3],['quadrilateral',4],['pentagon',5],['hexagon',6],['octagon',8]]; if(t>=1) P.push(['heptagon',7],['decagon',10]);
+      var p=choice(P), names=P.map(function(x){ return x[0].charAt(0).toUpperCase()+x[0].slice(1); }), right=p[0].charAt(0).toUpperCase()+p[0].slice(1);
+      return MC('2D shapes','What is the name of a polygon with '+p[1]+' straight sides?',right,sample(names.filter(function(x){ return x!==right; }),3),Art(p[0])+' '+p[0]+' has '+p[1]+' sides.');
+    }
+    var it=choice(F);
+    return Q('Properties of shapes',it[0],it[1],'The answer is '+it[1]+'.');
+  });
+
+  T('m_capacity','measures',0,2,function(t,s){
+    var f=randInt(0,2);
+    if(f===0){ var L=randInt(1,t===0?3:5), g=choice(t===0?[250,500,100]:[200,250,125,150,300]), tot=L*1000; if(tot%g){ g=250; }
+      return Q('Capacity','A jug holds '+L+' litre'+(L>1?'s':'')+' of juice. How many '+g+' ml glasses can be filled from it?',tot/g,L+' litre'+(L>1?'s':'')+' = '+tot+' ml. '+tot+' ÷ '+g+' = '+(tot/g)+' glasses.'); }
+    if(f===1){ var cap=choice([1000,1500,2000,750]), gl=choice([150,175,200,125,100]), n=randInt(2,Math.floor(cap/gl)-1);
+      return Q('Capacity','A bottle holds '+fmtNum(cap/1000)+' litres of water. '+nm()+' pours out '+n+' glasses of '+gl+' ml. How many millilitres are left in the bottle?',cap-n*gl,fmtNum(cap/1000)+' l = '+cap+' ml. '+n+' × '+gl+' = '+(n*gl)+' ml. '+cap+' − '+(n*gl)+' = '+(cap-n*gl)+' ml.'); }
+    var per=choice([2,3,4,5,6,8]), days=randInt(3,t===0?7:14);
+    return Q('Capacity','A plant is given '+(per*50)+' ml of water every day. How much water is that in '+days+' days, in ml?',per*50*days,(per*50)+' × '+days+' = '+(per*50*days)+' ml.');
+  });
+
+  T('m_scaledraw','measures',2,2,function(t,s){
+    var f=randInt(0,2);
+    if(f===0){ var sc=choice([2,5,10,20,25,50]), d=randInt(2,12); var tw=sample(TOWNS,2);
+      return Q('Scale','On a map, 1 cm stands for '+sc+' km. '+tw[0]+' and '+tw[1]+' are '+d+' cm apart on the map. How far apart are they in real life, in km?',sc*d,d+' × '+sc+' = '+(sc*d)+' km'); }
+    if(f===1){ var k=choice([10,20,25,50]), m=randInt(4,25);
+      return Q('Scale','A model car is 1/'+k+' of the size of the real car. The model is '+m+' cm long. How long is the real car, in cm?',m*k,m+' × '+k+' = '+(m*k)+' cm'); }
+    var sc2=choice([2,4,5]), real=sc2*randInt(3,15);
+    return Q('Scale','On a plan, 1 cm stands for '+sc2+' m. A garden is '+real+' m long. How long is it on the plan, in cm?',real/sc2,real+' ÷ '+sc2+' = '+(real/sc2)+' cm');
+  });
+
+  T('m_temp','measures',0,2,function(t,s){
+    var TT=['6 am','9 am','noon','3 pm','6 pm','9 pm','midnight'], ti=randInt(0,TT.length-2), tj=randInt(ti+1,TT.length-1), times=[TT[ti],TT[tj]], a, ch, up;
+    if(t===0){ a=randInt(4,15); ch=randInt(2,a-1); up=Math.random()<0.5; }
+    else { a=randInt(-6,10); ch=randInt(3,14); up=Math.random()<0.5; }
+    var b=up?a+ch:a-ch;
+    if(Math.random()<0.5) return Q('Temperature','At '+times[0]+' the temperature was '+fix(a,0)+'°C. By '+times[1]+' it had '+(up?'risen':'fallen')+' by '+ch+' degrees. What was the temperature at '+times[1]+', in °C?',b,fix(a,0)+(up?' + ':' − ')+ch+' = '+fix(b,0)+'°C');
+    return Q('Temperature','The temperature at '+times[0]+' was '+fix(a,0)+'°C. At '+times[1]+' it was '+fix(b,0)+'°C. By how many degrees did it change?',ch,'The difference between '+fix(a,0)+' and '+fix(b,0)+' is '+ch+' degrees.');
+  });
+
+  T('m_weight','measures',0,2,function(t,s){
+    var f=randInt(0,t===0?1:2), items=[['apple',120,180],['orange',150,220],['tin of beans',400,420],['bag of sugar',500,500],['book',300,650],['potato',150,300]];
+    var it=choice(items), w=Math.round(randInt(it[1],it[2])/10)*10, n=randInt(3,t===0?6:12);
+    if(f===0) return Q('Mass','One '+it[0]+' weighs '+w+' g. How much do '+n+' of them weigh, in grams?',w*n,w+' × '+n+' = '+(w*n)+' g');
+    if(f===1) return Q('Mass',n+' identical '+plur(it[0])+' weigh '+commas(w*n)+' g. How much does one weigh, in grams?',w,(w*n)+' ÷ '+n+' = '+w+' g');
+    return Q('Mass','One '+it[0]+' weighs '+w+' g. How much do '+n+' of them weigh, in kilograms?',clean(w*n/1000),w+' × '+n+' = '+(w*n)+' g = '+fmtNum(w*n/1000)+' kg');
+  });
+  // =====================================================================
+  // SEAG-STYLE PROBLEM SOLVING
+  // =====================================================================
+  function priceOf(it,t){ var p=randInt(it[1],it[2]); return t===0?Math.round(p/5)*5:p; }
+
+  T('s_change','seag',0,2,function(t,s){
+    var items=sample(SHOP_ITEMS.filter(function(x){ return t>0 || x[2]<=1000; }),t===0?randInt(1,2):randInt(1,3)), total=0, parts=[], who=nm();
+    items.forEach(function(it){ var p=priceOf(it,t); total+=p; parts.push(art(it[0])+' '+it[0]+' for '+showP(p)); });
+    var notes=[500,1000,2000,5000].filter(function(n){ return n>total; }), paid=notes[0];
+    return Q('Money & change',who+' buys '+listJoin(parts)+' and pays with a '+noteStr(paid)+' note. How much change should '+who+' get?',(paid-total)/100,
+      (items.length>1?'Total = '+gbp(total)+'. ':'')+gbp(paid)+' − '+gbp(total)+' = '+gbp(paid-total),{money:true});
+  });
+
+  T('s_shopsum','seag',0,2,function(t,s){
+    var list=Math.random()<0.5?SCHOOL_ITEMS:SHOP_ITEMS, items=sample(list.filter(function(x){ return t>0 || x[2]<=1000; }),t===0?2:3), total=0, parts=[], sums=[], who=nm();
+    items.forEach(function(it){ var p=priceOf(it,t), q=t===0?1:randInt(1,4); total+=p*q; parts.push(q===1?art(it[0])+' '+it[0]+' for '+showP(p):q+' '+plur(it[0])+' at '+showP(p)+' each'); sums.push(q===1?gbp(p):q+' × '+gbp(p)); });
+    return Q('Shopping',who+' buys '+listJoin(parts)+'. How much does '+who+' spend altogether?',total/100,sums.join(' + ')+' = '+gbp(total),{money:true});
+  });
+
+  T('s_sharerem','seag',0,2,function(t,s){
+    var ctx=choice([['pencils','tables'],['stickers','friends'],['sweets','party bags'],['cards','players'],['marbles','jars'],['books','shelves']]);
+    var g=randInt(3,t===0?6:9), per=randInt(3,t===0?9:25), extra=randInt(1,g-1), total=g*per+extra;
+    if(Math.random()<0.5) return Q('Sharing & remainders','There are '+total+' '+ctx[0]+' to share equally between '+g+' '+ctx[1]+'. How many '+ctx[0]+' are left over?',extra,total+' ÷ '+g+' = '+per+' remainder '+extra+'.');
+    return Q('Sharing & remainders','There are '+total+' '+ctx[0]+' to share equally between '+g+' '+ctx[1]+'. How many '+ctx[0]+' does each of the '+ctx[1]+' get?',per,total+' ÷ '+g+' = '+per+' remainder '+extra+', so each gets '+per+'.');
+  });
+
+  T('s_value','seag',1,2,function(t,s){
+    var item=choice(['felt tips','glue sticks','pencils','rubbers','notebooks']), qa, qb, pa, pb, ua, ub;
+    do{ qa=choice([2,3,4,5,6,8,10]); qb=choice([2,3,4,5,6,8,10,12]); pa=randInt(80,500); pb=randInt(80,600); ua=pa/qa; ub=pb/qb; }while(qa===qb || Math.abs(ua-ub)<2);
+    var ans=ua<ub?'Shop A':'Shop B';
+    return MC('Value for money','Shop A sells a pack of '+qa+' '+item+' for '+gbp(pa)+'. Shop B sells a pack of '+qb+' '+item+' for '+gbp(pb)+'. Which shop is better value?',ans,[ans==='Shop A'?'Shop B':'Shop A','They are the same'],
+      'Shop A: '+gbp(pa)+' ÷ '+qa+' ≈ '+(ua).toFixed(1)+'p each. Shop B: '+gbp(pb)+' ÷ '+qb+' ≈ '+(ub).toFixed(1)+'p each. '+ans+' is cheaper per item.');
+  });
+
+  T('s_journey','seag',0,2,function(t,s){
+    var tw=sample(TOWNS,2), mode=choice(['train','bus','coach']), dh=randInt(7,17), dm=t===0?randInt(0,11)*5:randInt(0,59);
+    var dur=t===0?choice([15,20,25,30,35,40,45,50,55,60,75,90]):randInt(18,140), arr=dh*60+dm+dur;
+    return Q('Time & journeys','A '+mode+' leaves '+tw[0]+' at '+hhmm(dh,dm)+' and arrives in '+tw[1]+' at '+hhmm(Math.floor(arr/60),arr%60)+'. How many minutes does the journey take?',dur,
+      'From '+hhmm(dh,dm)+' to '+hhmm(Math.floor(arr/60),arr%60)+' is '+(dur<60?dur+' minutes.':durWords(dur)+' = '+dur+' minutes.'));
+  });
+
+  T('s_timetable','seag',1,2,function(t,s){
+    var gap=choice([10,12,15,20,25,30,40,45]), sh=randInt(6,9), sm=randInt(0,11)*5, n=randInt(3,8), m=sh*60+sm+(n-1)*gap, tw=choice(TOWNS);
+    return TXT('Time & journeys','Buses leave '+tw+' every '+gap+' minutes. The first bus leaves at '+hhmm(sh,sm)+'. What time does the '+ordinal(n)+' bus leave? (Write it like 09:30)',hhmm(Math.floor(m/60),m%60),
+      'The '+ordinal(n)+' bus is '+(n-1)+' gaps after the first. '+(n-1)+' × '+gap+' = '+((n-1)*gap)+' minutes after '+hhmm(sh,sm)+' is '+hhmm(Math.floor(m/60),m%60)+'.',timeAccept(Math.floor(m/60),m%60));
+  });
+
+  T('s_fraction2','seag',1,2,function(t,s){
+    for(var tries=0;tries<30;tries++){
+      var bn=choice([1,2,3]), bd=choice([3,4,5,7]); if(bn>=bd) continue;
+      var total=bd*randInt(3,8), boys=total/bd*bn, girls=total-boys, dens=[2,3,4,5].filter(function(d){ return girls%d===0; });
+      if(!dens.length) continue;
+      var gd=choice(dens), gn=randInt(1,gd-1), ans=girls/gd*gn;
+      return Q('Fractions in context','There are '+total+' children in a club. '+bn+'/'+bd+' of them are boys and the rest are girls. '+gn+'/'+gd+' of the girls walk to the club. How many girls walk to the club?',ans,
+        'Boys = '+total+' ÷ '+bd+' × '+bn+' = '+boys+', so girls = '+girls+'. '+girls+' ÷ '+gd+' × '+gn+' = '+ans+'.');
+    }
+    return null;
+  });
+
+  T('s_discount','seag',1,2,function(t,s){
+    var item=choice(['jacket','pair of trainers','bike','tent','scooter','games console','coat','watch']), pct=choice(t===1?[10,20,25,50]:[10,15,20,25,30,35,40,60]);
+    var price=choice([20,30,40,50,60,80,100,120,150,180,200,240]), off=price*pct/100;
+    if(Math.random()<0.5 || t===1) return Q('Percentages in context','A '+item+' costs £'+price+'. In a sale, the price is cut by '+pct+'%. What is the sale price?',price-off,pct+'% of £'+price+' = £'+fmtNum(off)+'. £'+price+' − £'+fmtNum(off)+' = £'+fmtNum(price-off)+'.',{money:true});
+    return Q('Percentages in context','A '+item+' costs £'+price+'. In a sale there is '+pct+'% off. How much money is saved?',off,pct+'% of £'+price+' = '+price+' × '+pct+' ÷ 100 = £'+fmtNum(off)+'.',{money:true});
+  });
+
+  T('s_sdt','seag',2,2,function(t,s){
+    var f=randInt(0,2), sp=choice([30,40,50,60,70,80]), tm=choice([1,2,3,1.5,2.5,0.5]), d=sp*tm, who=choice(['A car','A coach','A lorry','A train']);
+    if(f===0) return Q('Speed, distance & time',who+' travels at an average speed of '+sp+' mph for '+fmtNum(tm)+' hour'+(tm===1?'':'s')+'. How far does it travel, in miles?',d,sp+' × '+fmtNum(tm)+' = '+fmtNum(d)+' miles');
+    if(f===1) return Q('Speed, distance & time',who+' travels '+fmtNum(d)+' miles at an average speed of '+sp+' mph. How many hours does the journey take?',tm,fmtNum(d)+' ÷ '+sp+' = '+fmtNum(tm)+' hours');
+    return Q('Speed, distance & time',who+' travels '+fmtNum(d)+' miles in '+fmtNum(tm)+' hour'+(tm===1?'':'s')+'. What is its average speed, in mph?',sp,fmtNum(d)+' ÷ '+fmtNum(tm)+' = '+sp+' mph');
+  });
+
+  T('s_recipe','seag',1,2,function(t,s){
+    var ing=choice([['flour','g',[100,150,200,250,300,400]],['sugar','g',[50,75,100,120,150]],['butter','g',[60,80,100,125,150]],['milk','ml',[100,150,200,250,300]],['oats','g',[80,120,160,200]]]);
+    var from=choice([2,4,6,8]), to, qty=choice(ing[2]);
+    do{ to=choice([from*2,from*3,from/2,Math.round(from*1.5),from+2,from*5]); }while(to===from || to<1 || (qty*to)%from!==0);
+    var ans=qty*to/from;
+    return Q('Ratio & scaling','A recipe for '+from+' people needs '+qty+' '+ing[1]+' of '+ing[0]+'. How many '+(ing[1]==='g'?'grams':'millilitres')+' of '+ing[0]+' are needed for '+to+' people?',ans,
+      qty+' ÷ '+from+' = '+fmtNum(qty/from)+' '+ing[1]+' per person. × '+to+' = '+fmtNum(ans)+' '+ing[1]+'.');
+  });
+
+  T('s_age','seag',0,2,function(t,s){
+    var n=nms(2), a=randInt(7,12), f=randInt(0,t===0?2:4);
+    if(f===0){ var d=randInt(20,35); return Q('Age problems',n[0]+' is '+a+' years old. '+n[0]+'’s mum is '+d+' years older. How old is '+n[0]+'’s mum?',a+d,a+' + '+d+' = '+(a+d)); }
+    if(f===1){ var y=randInt(3,15); return Q('Age problems',n[0]+' is '+a+' years old now. How old will '+n[0]+' be in '+y+' years?',a+y,a+' + '+y+' = '+(a+y)); }
+    if(f===2){ var g=randInt(55,80); return Q('Age problems',n[0]+'’s granny is '+g+' and '+n[0]+' is '+a+'. How many years older is granny?',g-a,g+' − '+a+' = '+(g-a)); }
+    if(f===3){ var k=randInt(2,4), yb=randInt(2,6); return Q('Age problems',n[0]+' is '+a+'. '+n[1]+' is '+k+' times as old as '+n[0]+'. How old was '+n[1]+' '+yb+' years ago?',a*k-yb,n[1]+' is '+a+' × '+k+' = '+(a*k)+' now. '+(a*k)+' − '+yb+' = '+(a*k-yb)+'.'); }
+    var diff=randInt(2,6), tot=2*a+diff;
+    return Q('Age problems',n[0]+' is '+diff+' years older than '+n[1]+'. Their ages add up to '+tot+'. How old is '+n[0]+'?',a+diff,'Take away the difference: '+tot+' − '+diff+' = '+(2*a)+'. Half is '+a+' ('+n[1]+'), so '+n[0]+' is '+a+' + '+diff+' = '+(a+diff)+'.');
+  });
+
+  T('s_fencing','seag',1,2,function(t,s){
+    var w=randInt(4,t===1?12:20), h=randInt(3,t===1?10:18), P=2*(w+h), cost=choice(t===1?[2,3,4,5,10]:[3,4,5,6,8,12,15]);
+    return Q('Perimeter in context','A rectangular garden is '+w+' m long and '+h+' m wide. Fencing costs £'+cost+' per metre. How much does it cost to fence all the way round?',P*cost,
+      'Perimeter = 2 × ('+w+' + '+h+') = '+P+' m. Cost = '+P+' × £'+cost+' = £'+(P*cost)+'.',{money:true});
+  });
+
+  T('s_pattern','seag',1,2,function(t,s){
+    var pats=[['square','squares','matchsticks',4,3],['triangle','triangles','straws',3,2],['hexagon','hexagons','lolly sticks',6,5],['pentagon','pentagons','matchsticks',5,4]];
+    var n=randInt(5,t===1?10:25);
+    if(Math.random()<0.25){ var val2=2*n+2;
+      return Q('Patterns','Square tables are pushed together in a line. 1 table seats 4 people, 2 tables seat 6 and 3 tables seat 8. How many people can sit at '+n+' tables?',val2,'Each extra table adds 2 seats. 4 + '+(n-1)+' × 2 = '+val2+'.'); }
+    var p=choice(pats), val=p[3]+(n-1)*p[4];
+    return Q('Patterns',p[1].charAt(0).toUpperCase()+p[1].slice(1)+' are made in a row from '+p[2]+'. 1 '+p[0]+' needs '+p[3]+' '+p[2]+', 2 '+p[1]+' need '+(p[3]+p[4])+' and 3 '+p[1]+' need '+(p[3]+2*p[4])+'. How many '+p[2]+' are needed for '+n+' '+p[1]+'?',val,
+      'Each extra '+p[0]+' adds '+p[4]+' '+p[2]+'. '+p[3]+' + '+(n-1)+' × '+p[4]+' = '+val+'.');
+  });
+
+  T('s_poolsplit','seag',1,2,function(t,s){
+    var n=randInt(3,5), amts=[], tot=0, i;
+    for(i=0;i<n;i++){ var a=randInt(2,t===1?10:25); amts.push(a); tot+=a; }
+    while(tot%n!==0){ amts[n-1]++; tot++; }
+    var names=nms(n);
+    return Q('Sharing money',listJoin(names.map(function(x,k){ return x+' has £'+amts[k]; }))+'. They put all their money together and share it out equally. How much does each person get?',tot/n,
+      'Total = £'+amts.join(' + £')+' = £'+tot+'. £'+tot+' ÷ '+n+' = £'+(tot/n)+'.',{money:true});
+  });
+
+  T('s_multimoney','seag',0,2,function(t,s){
+    var who=nm(), st=randInt(t===0?20:60,t===0?60:200), a=randInt(3,t===0?10:40), b=randInt(3,t===0?10:30), c=randInt(3,t===0?10:40);
+    if(st-a+b-c<0) st+=c+a;
+    var ans=st-a+b-c;
+    return Q('Multi-step money',who+' has £'+st+' in a money box. '+who+' spends £'+a+' on a present, earns £'+b+' for helping at home, then spends £'+c+' at the cinema. How much money is left?',ans,
+      '£'+st+' − £'+a+' + £'+b+' − £'+c+' = £'+ans+'.',{money:true});
+  });
+
+  T('s_buses','seag',0,2,function(t,s){
+    var ctx=choice([['pupils are going on a school trip','Each bus holds','buses'],['people are going to a wedding','Each minibus holds','minibuses'],['children are going to a football camp','Each car holds','cars'],['fans are travelling to a match','Each coach holds','coaches']]);
+    var cap=ctx[2]==='cars'?choice([4,5]):(t===0?choice([10,12,15,20]):choice([16,24,32,45,52,57])), full=randInt(2,t===0?6:9), extra=randInt(1,cap-1), people=cap*full+extra;
+    return Q('Rounding up in context',people+' '+ctx[0]+'. '+ctx[1]+' '+cap+'. How many '+ctx[2]+' are needed?',full+1,
+      people+' ÷ '+cap+' = '+full+' remainder '+extra+'. The '+extra+' left over still need a seat, so '+(full+1)+' '+ctx[2]+' are needed.');
+  });
+
+  T('s_boxes','seag',0,2,function(t,s){
+    var ctx=choice([['eggs','boxes',6],['eggs','boxes',12],['cakes','tins',8],['pencils','packs',10],['cans','crates',24],['yoghurts','packs',4]]);
+    var full=randInt(3,t===0?10:30), extra=randInt(1,ctx[2]-1), tot=full*ctx[2]+extra;
+    if(Math.random()<0.6) return Q('Rounding down in context',tot+' '+ctx[0]+' are packed into '+ctx[1]+' of '+ctx[2]+'. How many '+ctx[1]+' can be completely filled?',full,
+      tot+' ÷ '+ctx[2]+' = '+full+' remainder '+extra+'. Only '+full+' '+ctx[1]+' are full.');
+    return Q('Rounding down in context',tot+' '+ctx[0]+' are packed into '+ctx[1]+' of '+ctx[2]+'. How many '+ctx[0]+' are left over?',extra,tot+' ÷ '+ctx[2]+' = '+full+' remainder '+extra+'.');
+  });
+
+  T('s_bulk','seag',1,2,function(t,s){
+    var item=choice(['pens','pencils','rubbers','glue sticks','lollies']), each=randInt(15,60), k=choice([5,6,8,10,12]), pack=each*k-randInt(10,Math.floor(each*k*0.4));
+    pack=Math.round(pack/5)*5;
+    if(pack>=each*k) pack=each*k-5;
+    return Q('Value for money',item.charAt(0).toUpperCase()+item.slice(1)+' cost '+each+'p each, or '+gbp(pack)+' for a pack of '+k+'. How much is saved by buying the pack instead of '+k+' single '+item+'?',(each*k-pack)/100,
+      k+' × '+each+'p = '+gbp(each*k)+'. '+gbp(each*k)+' − '+gbp(pack)+' = '+gbp(each*k-pack)+'.',{money:true});
+  });
+
+  T('s_tickets','seag',0,2,function(t,s){
+    var place=choice(['the zoo','the cinema','a castle','an aquarium','a theme park','a museum','the pantomime']), ad=t===0?randInt(5,15):randInt(140,480)*5, ch=t===0?randInt(2,Math.max(3,ad-2)):randInt(60,Math.floor(ad*0.7/5))*5;
+    var na=randInt(1,t===0?2:3), nc=randInt(1,t===0?3:5);
+    if(t===0){ var tot=na*ad+nc*ch; return Q('Money problems','Tickets for '+place+' cost £'+ad+' for an adult and £'+ch+' for a child. How much does it cost for '+na+' adult'+(na>1?'s':'')+' and '+nc+' child'+(nc>1?'ren':'')+'?',tot,na+' × £'+ad+' + '+nc+' × £'+ch+' = £'+tot+'.',{money:true}); }
+    var total=na*ad+nc*ch;
+    return Q('Money problems','Tickets for '+place+' cost '+gbp(ad)+' for an adult and '+gbp(ch)+' for a child. How much does it cost for '+na+' adult'+(na>1?'s':'')+' and '+nc+' child'+(nc>1?'ren':'')+'?',total/100,
+      na+' × '+gbp(ad)+' = '+gbp(na*ad)+'. '+nc+' × '+gbp(ch)+' = '+gbp(nc*ch)+'. Total = '+gbp(total)+'.',{money:true});
+  });
+
+  T('s_savings','seag',0,2,function(t,s){
+    var who=nm(), per=t===0?randInt(2,6)*100:choice([150,250,350,450,125,175,225,375]), w=randInt(4,t===0?10:16), goal=per*w, item=choice(['a new bike','a football kit','a video game','a pair of trainers','a skateboard','a camera']);
+    return Q('Saving money',who+' saves '+gbp(per)+' every week to buy '+item+' that costs '+gbp(goal)+'. How many weeks will it take?',w,gbp(goal)+' ÷ '+gbp(per)+' = '+w+' weeks.');
+  });
+
+  T('s_partwhole','seag',0,2,function(t,s){
+    var d=t===0?choice([2,3,4,5,10]):choice([3,4,5,6,8,10]), n=t===0?1:randInt(1,d-1), g=gcd(n,d); n/=g; d/=g;
+    var tot=d*randInt(3,t===0?6:12), part=tot/d*n, ctx=choice([['children in a class','are girls','boys'],['sweets in a bag','are red','sweets that are not red'],['cars in a car park','are silver','cars that are not silver'],['pupils in a choir','are in P7','pupils that are not in P7'],['books on a shelf','are fiction','books that are not fiction']]);
+    return Q('Fractions in context','There are '+tot+' '+ctx[0]+'. '+n+'/'+d+' of them '+ctx[1]+'. How many '+ctx[2]+' are there?',tot-part,
+      n+'/'+d+' of '+tot+' = '+part+'. '+tot+' − '+part+' = '+(tot-part)+'.');
+  });
+
+  T('s_pctclass','seag',1,2,function(t,s){
+    var pct=choice(t===1?[10,20,25,50,75]:[10,15,20,25,30,40,60,75,80]), unit=100/gcd(pct,100);
+    var tot=unit*randInt(Math.max(1,Math.ceil(16/unit)),Math.max(2,Math.floor(120/unit))), part=tot*pct/100;
+    var ctx=choice([['pupils in a school','walk to school','do not walk to school'],['people at a concert','are children','are not children'],['seeds planted in a tray','have started to grow','have not started to grow'],['raffle tickets','have been sold','have not been sold'],['books in the class library','are non-fiction','are not non-fiction']]);
+    return Q('Percentages in context','There are '+tot+' '+ctx[0]+'. '+pct+'% of them '+ctx[1]+'. How many '+ctx[2]+'?',tot-part,
+      pct+'% of '+tot+' = '+part+'. '+tot+' − '+part+' = '+(tot-part)+'.');
+  });
+
+  T('s_ribbon','seag',0,2,function(t,s){
+    var len=t===0?choice([1,2,3]):choice([2,3,4,5]), piece=t===0?choice([10,20,25,30]):choice([15,35,45,55,65,75,85]), maxN=Math.floor(len*100/piece), n=randInt(2,Math.max(2,maxN-1));
+    var item=choice(['ribbon','piece of string','roll of tape','length of rope']), left=len*100-n*piece;
+    return Q('Measures in context',Art(item)+' '+item+' is '+len+' m long. '+n+' pieces, each '+piece+' cm long, are cut from it. How much is left, in cm?',left,
+      len+' m = '+(len*100)+' cm. '+n+' × '+piece+' = '+(n*piece)+' cm. '+(len*100)+' − '+(n*piece)+' = '+left+' cm.');
+  });
+
+  T('s_sumdiff','seag',1,2,function(t,s){
+    var small=randInt(5,t===1?30:120), d=randInt(2,t===1?20:60), big=small+d, sum=small+big;
+    var larger=Math.random()<0.5;
+    return Q('Number puzzles','Two numbers add up to '+sum+'. Their difference is '+d+'. What is the '+(larger?'larger':'smaller')+' number?',larger?big:small,
+      '('+sum+' − '+d+') ÷ 2 = '+small+' is the smaller number, and '+small+' + '+d+' = '+big+' is the larger.');
+  });
+
+  T('s_thinknum','seag',0,2,function(t,s){
+    var x=randInt(2,t===0?20:30), who=nm();
+    if(t===0){ var a=randInt(3,20); if(Math.random()<0.5) return Q('Number puzzles',who+' thinks of a number and adds '+a+'. The answer is '+(x+a)+'. What was the number?',x,(x+a)+' − '+a+' = '+x);
+      var m=randInt(2,5); return Q('Number puzzles',who+' thinks of a number and multiplies it by '+m+'. The answer is '+(x*m)+'. What was the number?',x,(x*m)+' ÷ '+m+' = '+x); }
+    var mul=randInt(2,6), add=randInt(2,20), sub=Math.random()<0.4, res=sub?x*mul-add:x*mul+add;
+    if(res<=0){ sub=false; res=x*mul+add; }
+    return Q('Number puzzles',who+' thinks of a number, multiplies it by '+mul+', then '+(sub?'subtracts ':'adds ')+add+'. The answer is '+res+'. What was the number?',x,
+      'Work backwards: '+res+' '+(sub?'+':'−')+' '+add+' = '+(x*mul)+', then '+(x*mul)+' ÷ '+mul+' = '+x+'.');
+  });
+
+  T('s_consecutive','seag',2,2,function(t,s){
+    var n=randInt(5,80), k=choice([3,3,4,5]), sum=0, i; for(i=0;i<k;i++) sum+=n+i;
+    var ask=choice(['largest','smallest']);
+    return Q('Number puzzles',k+' consecutive whole numbers add up to '+sum+'. What is the '+ask+' of the numbers?',ask==='largest'?n+k-1:n,
+      'The numbers are '+listJoin(Array.apply(null,{length:k}).map(function(_,j){ return String(n+j); }))+'.');
+  });
+
+  T('s_mealdeal','seag',0,2,function(t,s){
+    var mains=[['sandwich',180,320],['wrap',220,350],['roll',150,280],['bowl of soup',150,260]], extras=[['drink',60,120],['packet of crisps',45,90],['piece of fruit',30,70],['yoghurt',40,85],['cookie',50,110]];
+    var pick=[choice(mains)].concat(sample(extras,t===0?1:2)), per=0, parts=[];
+    pick.forEach(function(it){ var p=priceOf(it,t); per+=p; parts.push(art(it[0])+' '+it[0]+' ('+showP(p)+')'); });
+    var n=randInt(2,t===0?3:6), who=nm();
+    return Q('Money problems',who+' buys lunch for '+n+' people. Each person has '+listJoin(parts)+'. What is the total cost?',per*n/100,
+      'One lunch = '+gbp(per)+'. '+n+' × '+gbp(per)+' = '+gbp(per*n)+'.',{money:true});
+  });
+
+  T('s_exchange','seag',2,2,function(t,s){
+    var rate=choice([1.1,1.2,1.15,1.25,1.4]), cur=choice([['euros','€'],['US dollars','$']]), pounds=choice([10,20,25,40,50,60,80,100,150,200]), ans=clean(pounds*rate);
+    if(Math.random()<0.6) return Q('Exchange rates','£1 is worth '+cur[1]+rate.toFixed(2)+'. How many '+cur[0]+' do you get for £'+pounds+'?',ans,pounds+' × '+rate.toFixed(2)+' = '+cur[1]+ans.toFixed(2));
+    return Q('Exchange rates','£1 is worth '+cur[1]+rate.toFixed(2)+'. A souvenir costs '+cur[1]+ans.toFixed(2)+'. How much is that in pounds?',pounds,ans.toFixed(2)+' ÷ '+rate.toFixed(2)+' = £'+pounds,{money:true});
+  });
+
+  T('s_squash','seag',1,2,function(t,s){
+    var p=randInt(1,2), w=randInt(3,8), sq=p*choice([25,50,75,100]), wat=sq/p*w;
+    return Q('Ratio & scaling','Orange squash is made using '+p+' part'+(p>1?'s':'')+' squash to '+w+' parts water. How much water is needed for '+sq+' ml of squash, in ml?',wat,
+      sq+' ÷ '+p+' = '+(sq/p)+' ml per part. '+w+' × '+(sq/p)+' = '+wat+' ml.');
+  });
+
+  T('s_tiles','seag',1,2,function(t,s){
+    var l=randInt(3,t===1?6:10), w=randInt(2,t===1?5:8), c=choice(t===1?[5,10,12,15,20]:[8,12,15,18,24,25]), A=l*w;
+    return Q('Area in context','A floor is '+l+' m by '+w+' m. Tiles cost £'+c+' per square metre. How much will it cost to tile the whole floor?',A*c,
+      'Area = '+l+' × '+w+' = '+A+' m². Cost = '+A+' × £'+c+' = £'+(A*c)+'.',{money:true});
+  });
+
+  T('s_packs','seag',0,2,function(t,s){
+    var item=choice([['party hats','packs',[6,8,10]],['balloons','bags',[10,12,15,20]],['paper plates','packs',[8,10,12]],['name badges','sheets',[6,8,12]],['cupcake cases','packs',[12,24]]]);
+    var k=choice(item[2]), need=k*randInt(2,t===0?5:9)+randInt(1,k-1), packs=Math.ceil(need/k);
+    if(t===0 || Math.random()<0.5) return Q('Rounding up in context',nm()+' needs '+need+' '+item[0]+'. They come in '+item[1]+' of '+k+'. How many '+item[1]+' must be bought?',packs,
+      need+' ÷ '+k+' = '+Math.floor(need/k)+' remainder '+(need%k)+', so '+packs+' '+item[1]+' are needed.');
+    var price=randInt(60,350);
+    return Q('Rounding up in context',nm()+' needs '+need+' '+item[0]+'. They are sold in '+item[1]+' of '+k+' for '+showP(price)+' each. How much will it cost to buy enough?',packs*price/100,
+      packs+' '+item[1]+' are needed ('+need+' ÷ '+k+', rounded up). '+packs+' × '+showP(price)+' = '+gbp(packs*price)+'.',{money:true});
+  });
+
+  T('s_meantarget','seag',2,2,function(t,s){
+    var n=randInt(3,4), target=randInt(6,9), scores=[], sum=0, i;
+    for(i=0;i<n;i++){ var v=randInt(Math.max(1,target-3),Math.min(10,target+2)); scores.push(v); sum+=v; }
+    var need=target*(n+1)-sum;
+    if(need<0||need>10){ return null; }
+    var who=nm();
+    return Q('Averages in context',who+'’s scores in '+n+' quizzes were '+listJoin(scores.map(String))+'. What must '+who+' score in the next quiz to have a mean of '+target+'?',need,
+      'For a mean of '+target+' over '+(n+1)+' quizzes, the total must be '+target+' × '+(n+1)+' = '+(target*(n+1))+'. So far: '+sum+'. '+(target*(n+1))+' − '+sum+' = '+need+'.');
+  });
+
+  T('s_holiday','seag',1,2,function(t,s){
+    var mi=randInt(0,10), m1=MONTHS[mi], m2=MONTHS[mi+1], d1=randInt(m1[1]-10,m1[1]), d2=randInt(1,12), days=(m1[1]-d1+1)+d2;
+    return Q('Calendars','A holiday starts on the '+ordinal(d1)+' of '+m1[0]+' and ends on the '+ordinal(d2)+' of '+m2[0]+'. How many days long is the holiday, counting both the first and last days?',days,
+      m1[0]+' has '+m1[1]+' days, so '+ordinal(d1)+' to '+ordinal(m1[1])+' is '+(m1[1]-d1+1)+' days. Add '+d2+' days in '+m2[0]+': '+days+' days.');
+  });
+
+  T('s_running','seag',0,2,function(t,s){
+    var who=nm(), days=randInt(3,7), per=t===0?choice([200,300,400,500,800]):choice([1.2,1.5,2.4,3.5,0.8,2.25]), unit=t===0?'m':'km';
+    var tot=clean(per*days);
+    if(t===0) return Q('Measures in context',who+' runs '+per+' m every day for '+days+' days. How far is that altogether, in metres?',tot,per+' × '+days+' = '+tot+' m');
+    if(Math.random()<0.5) return Q('Measures in context',who+' cycles '+fmtNum(per)+' km every day for '+days+' days. How far is that altogether, in km?',tot,fmtNum(per)+' × '+days+' = '+fmtNum(tot)+' km');
+    return Q('Measures in context',who+' cycles '+fmtNum(per)+' km every day for '+days+' days. How far is that altogether, in metres?',clean(tot*1000),fmtNum(per)+' × '+days+' = '+fmtNum(tot)+' km = '+commas(clean(tot*1000))+' m');
+  });
+
+  T('s_weightbag','seag',1,2,function(t,s){
+    var tin=randInt(30,48)*10+choice([0,5]), n=randInt(3,8), bag=choice([50,80,100,120,150]), tot=tin*n+bag;
+    return Q('Measures in context','A tin of soup weighs '+tin+' g. '+n+' tins are put in a bag that weighs '+bag+' g. What is the total weight, in kg?',clean(tot/1000),
+      n+' × '+tin+' = '+commas(tin*n)+' g. Add the bag: '+commas(tin*n)+' + '+bag+' = '+commas(tot)+' g = '+fmtNum(tot/1000)+' kg.');
+  });
+
+  T('s_pages','seag',0,2,function(t,s){
+    var who=nm(), per=randInt(t===0?5:12,t===0?15:35), d=randInt(3,t===0?6:12), total=per*d+randInt(t===0?10:30,t===0?60:200);
+    return Q('Word problems','A book has '+total+' pages. '+who+' reads '+per+' pages every day for '+d+' days. How many pages are still left to read?',total-per*d,
+      per+' × '+d+' = '+(per*d)+' pages read. '+total+' − '+(per*d)+' = '+(total-per*d)+'.');
+  });
+
+  T('s_timesmany','seag',1,2,function(t,s){
+    var n=nms(2), a=randInt(6,t===1?20:45), k=randInt(2,5), thing=choice(['stickers','marbles','football cards','shells','stamps']), tot=a*(k+1);
+    return Q('Word problems',n[1]+' has '+k+' times as many '+thing+' as '+n[0]+'. Together they have '+tot+' '+thing+'. How many does '+n[0]+' have?',a,
+      'Think of '+n[0]+' as 1 part and '+n[1]+' as '+k+' parts: '+(k+1)+' parts = '+tot+'. '+tot+' ÷ '+(k+1)+' = '+a+'.');
+  });
+
+  T('s_bogof','seag',1,2,function(t,s){
+    var item=choice(['T-shirts','books','DVDs','toy cars','caps']), p=choice([4,6,8,10,12,14]), n=randInt(2,6)*2, offer=randInt(0,1);
+    if(offer===0) return Q('Special offers',item.charAt(0).toUpperCase()+item.slice(1)+' cost £'+p+' each. There is an offer: "Buy one, get one free". How much do '+n+' '+item+' cost?',(n/2)*p,
+      'You only pay for half of them: '+(n/2)+' × £'+p+' = £'+((n/2)*p)+'.',{money:true});
+    return Q('Special offers',item.charAt(0).toUpperCase()+item.slice(1)+' cost £'+p+' each. There is an offer: "Buy one, get the second half price". How much do 2 '+item+' cost?',p*1.5,
+      '£'+p+' + £'+(p/2)+' = £'+fmtNum(p*1.5)+'.',{money:true});
+  });
+
+  T('s_marbles','seag',2,2,function(t,s){
+    var who=nms(3), d1=choice([2,3,4,5]), d2=choice([2,3,4]), k=randInt(2,6), tot=d1*d2*k;
+    if(tot<20) tot*=2;
+    var g1=tot/d1, rem=tot-g1, g2=rem/d2, left=rem-g2;
+    if(!Number.isInteger(g2)) return null;
+    return Q('Fractions in context',who[0]+' has '+tot+' marbles. '+who[0]+' gives 1/'+d1+' of them to '+who[1]+', then gives 1/'+d2+' of what is left to '+who[2]+'. How many marbles does '+who[0]+' have now?',left,
+      '1/'+d1+' of '+tot+' = '+g1+', leaving '+rem+'. 1/'+d2+' of '+rem+' = '+g2+', leaving '+left+'.');
+  });
+
+  T('s_paint','seag',2,2,function(t,s){
+    var w, h, cover, A, tins, guard=0;
+    do{ w=randInt(3,9); h=choice([2,2.5,3]); cover=choice([4,5,6,8,10]); A=clean(w*h); tins=Math.ceil(A/cover); guard++; }while((tins<2 || A%cover===0) && guard<50);
+    return Q('Area in context','A wall is '+w+' m long and '+fmtNum(h)+' m high. One tin of paint covers '+cover+' m². How many tins are needed to paint the wall once?',tins,
+      'Area = '+w+' × '+fmtNum(h)+' = '+fmtNum(A)+' m². '+fmtNum(A)+' ÷ '+cover+' = '+fmtNum(Math.round(A/cover*100)/100)+'. You cannot buy part of a tin, so round up to '+tins+' tins.');
+  });
+
+  T('s_seats','seag',0,2,function(t,s){
+    var rows=randInt(t===0?4:8,t===0?10:25), per=randInt(t===0?5:12,t===0?10:30), cap=rows*per, ppl=cap-randInt(3,Math.min(60,cap-5)), place=choice(['school hall','theatre','church hall','cinema screen']);
+    return Q('Word problems','A '+place+' has '+rows+' rows with '+per+' seats in each row. '+ppl+' people come to a show. How many seats are empty?',cap-ppl,
+      rows+' × '+per+' = '+cap+' seats. '+cap+' − '+ppl+' = '+(cap-ppl)+' empty.');
+  });
+
+  T('s_tripcost','seag',1,2,function(t,s){
+    var n=choice([20,24,25,28,30,32,36,40,45,48]), each=randInt(t===1?5:6,t===1?15:25), extra=t===2?choice([0,0.5,0.25,0.75]):0;
+    var per=clean(each+extra), tot=clean(per*n), what=choice(['A coach for a school trip','Entry to an activity centre','A minibus and driver','A class visit to the planetarium']);
+    return Q('Sharing money',what+' costs '+'£'+fmtNum(tot)+' altogether. The cost is shared equally between '+n+' pupils. How much does each pupil pay?',per,
+      '£'+fmtNum(tot)+' ÷ '+n+' = £'+per.toFixed(2)+'.',{money:true});
+  });
+
+  T('s_coinjar','seag',1,2,function(t,s){
+    var coin=choice([5,10,20,50,2]), n=randInt(12,t===1?60:150), tot=coin*n;
+    return Q('Money problems','A jar is full of '+coin+'p coins. Altogether they are worth '+gbp(tot)+'. How many coins are in the jar?',n,
+      gbp(tot)+' = '+tot+'p. '+tot+' ÷ '+coin+' = '+n+' coins.');
+  });
+
+  T('s_party','seag',1,2,function(t,s){
+    var base=choice([40,50,60,75,85,100,120]), per=randInt(4,9)+(t===2?choice([0,0.5]):0), kids=randInt(8,20), tot=clean(base+per*kids);
+    return Q('Money problems','A soft play party costs £'+base+' to book, plus '+pd(per)+' for each child. How much does a party for '+kids+' children cost?',tot,
+      kids+' × '+pd(per)+' = '+pd(clean(per*kids))+'. £'+base+' + '+pd(clean(per*kids))+' = '+pd(tot)+'.',{money:true});
+  });
+
+  T('s_parking','seag',1,2,function(t,s){
+    var first=choice([100,120,150,200]), extra=choice([50,60,70,80,90]), hrs=randInt(2,t===1?5:8), tot=first+extra*(hrs-1);
+    return Q('Money problems','A car park charges '+gbp(first)+' for the first hour and '+showP(extra)+' for each extra hour. How much does it cost to park for '+hrs+' hours?',tot/100,
+      gbp(first)+' + '+(hrs-1)+' × '+showP(extra)+' = '+gbp(first)+' + '+gbp(extra*(hrs-1))+' = '+gbp(tot)+'.',{money:true});
+  });
+
+  T('s_fair','seag',0,2,function(t,s){
+    var item=choice(['cakes','cookies','raffle tickets','cups of juice','badges','bookmarks']), p=t===0?choice([10,20,25,50]):randInt(15,95), n=randInt(t===0?5:12,t===0?20:60), tot=p*n;
+    return Q('Money problems','At the school fair, '+item+' are sold for '+showP(p)+' each. '+n+' are sold. How much money is raised?',tot/100,
+      n+' × '+p+'p = '+tot+'p = '+gbp(tot)+'.',{money:true});
+  });
+
+  T('s_drip','seag',2,2,function(t,s){
+    var ml=choice([5,10,15,20,25]), hrs=randInt(2,8), tot=ml*60*hrs;
+    return Q('Measures in context','A leaky tap drips '+ml+' ml of water every minute. How many litres of water drip in '+hrs+' hours?',clean(tot/1000),
+      hrs+' hours = '+(hrs*60)+' minutes. '+(hrs*60)+' × '+ml+' = '+commas(tot)+' ml = '+fmtNum(tot/1000)+' litres.');
+  });
+
+  T('s_stickers','seag',0,2,function(t,s){
+    var n=nms(3), d=t===0?choice([2,4]):choice([3,4,5,6]), k=randInt(3,t===0?10:15), tot=d*k, give=randInt(2,t===0?6:12);
+    if(tot-k-give<0) give=1;
+    return Q('Fractions in context',n[0]+' has '+tot+' stickers. '+n[0]+' gives 1/'+d+' of them to '+n[1]+' and '+give+' to '+n[2]+'. How many stickers does '+n[0]+' have left?',tot-k-give,
+      '1/'+d+' of '+tot+' = '+k+'. '+tot+' − '+k+' − '+give+' = '+(tot-k-give)+'.');
+  });
+
+  T('s_heights','seag',1,2,function(t,s){
+    var n=nms(2), a=randInt(120,150), b=randInt(a+3,a+30);
+    if(Math.random()<0.5) return Q('Measures in context',n[0]+' is '+(a/100).toFixed(2)+' m tall and '+n[1]+' is '+(b/100).toFixed(2)+' m tall. How much taller is '+n[1]+', in cm?',b-a,
+      (b/100).toFixed(2)+' m = '+b+' cm and '+(a/100).toFixed(2)+' m = '+a+' cm. '+b+' − '+a+' = '+(b-a)+' cm.');
+    var c=randInt(3,12);
+    return Q('Measures in context',n[0]+' is '+(a/100).toFixed(2)+' m tall. Over the next year '+n[0]+' grows '+c+' cm. How tall is '+n[0]+' then, in metres?',clean((a+c)/100),
+      (a/100).toFixed(2)+' m = '+a+' cm. '+a+' + '+c+' = '+(a+c)+' cm = '+((a+c)/100).toFixed(2)+' m.');
+  });
+
+  T('s_fundraise','seag',1,2,function(t,s){
+    var cls=sample(['Y6D','Y6B','Y6C'],2), a=randInt(4000,15000), b=randInt(3000,a-500);
+    return Q('Money problems','For charity, class '+cls[0]+' raised '+gbp(a)+' and class '+cls[1]+' raised '+gbp(b)+'. How much more did '+cls[0]+' raise?',(a-b)/100,
+      gbp(a)+' − '+gbp(b)+' = '+gbp(a-b)+'.',{money:true});
+  });
+
+  T('s_wrap','seag',0,2,function(t,s){
+    var per=randInt(2,t===0?5:8), n=randInt(4,t===0?12:25), job=choice(['wrap a present','ice a cake','plant a tree','paint a plant pot','make a bracelet']), tot=per*n;
+    if(t===0 || Math.random()<0.5) return Q('Time problems','It takes '+per+' minutes to '+job+'. How many minutes will it take to do this '+n+' times?',tot,per+' × '+n+' = '+tot+' minutes.');
+    return TXT('Time problems','It takes '+per+' minutes to '+job+'. Starting at 10:00, what time will it be after doing this '+n+' times? (Write it like 11:15)',hhmm(10+Math.floor(tot/60),tot%60),
+      per+' × '+n+' = '+tot+' minutes = '+durWords(tot)+'. 10:00 + '+durWords(tot)+' = '+hhmm(10+Math.floor(tot/60),tot%60)+'.',timeAccept(10+Math.floor(tot/60),tot%60));
+  });
+
+  T('s_cakes','seag',0,2,function(t,s){
+    var per=choice([2,3,4,6]), eggsPer=randInt(2,4), n=randInt(3,t===0?6:12), ask=randInt(0,1);
+    if(ask===0) return Q('Word problems','A baker uses '+eggsPer+' eggs for every cake. How many eggs are needed for '+n+' cakes?',eggsPer*n,eggsPer+' × '+n+' = '+(eggsPer*n)+' eggs.');
+    var boxes=randInt(3,t===0?6:12);
+    return Q('Word problems','Cupcakes are sold in boxes of '+per+'. A café sells '+boxes+' boxes in the morning and '+(boxes+2)+' boxes in the afternoon. How many cupcakes is that altogether?',per*(2*boxes+2),
+      boxes+' + '+(boxes+2)+' = '+(2*boxes+2)+' boxes. '+(2*boxes+2)+' × '+per+' = '+(per*(2*boxes+2))+' cupcakes.');
+  });
+  // =====================================================================
+  // QUIZ BUILDER — shuffled "bag" of question types so a quiz uses as many
+  // different types as possible, plus a per-device memory of recent
+  // questions and types so the next quiz favours ones not seen lately.
+  // =====================================================================
+  var HISTORY_KEY='mt_recent_q_v2', TPL_KEY='mt_recent_tpl_v2';
+  function loadList(k){ try{ var v=JSON.parse(window.localStorage.getItem(k)||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+  function saveList(k,arr,max){ try{ window.localStorage.setItem(k, JSON.stringify(arr.slice(-max))); }catch(e){} }
+  function categoryLabel(cat){
+    if(cat==='number') return 'Number & Calculation';
+    if(cat==='measures') return 'Measures, Shape & Data';
+    return 'SEAG Problem Solving';
+  }
+  function questionKey(q){ return hashStr(q.text+'|'+(q.svg||'')+'|'+(q.choices?q.choices.slice().sort().join('/'):'')); }
+  function poolFor(cat,tier){ return TEMPLATES.filter(function(tp){ return tp.cat===cat && tier>=tp.min && tier<=tp.max; }); }
+  function makeBag(cat,tier,recent){
+    var last={}, fresh=[], stale=[];
+    recent.forEach(function(id,i){ last[id]=i; });
+    poolFor(cat,tier).forEach(function(tp){ (last[tp.id]===undefined?fresh:stale).push(tp); });
+    stale.sort(function(a,b){ return last[a.id]-last[b.id]; });
+    return shuffle(fresh).concat(stale);
+  }
+  function buildQuiz(strand,tier,sec,count){
+    var recentQ=loadList(HISTORY_KEY), recentTpl=loadList(TPL_KEY), hist={}, quiz={};
+    recentQ.forEach(function(k){ hist[k]=1; });
+    var cats = strand==='mixed' ? shuffle(['number','measures','seag']) : [strand];
+    var bags={}; cats.forEach(function(c){ bags[c]=makeBag(c,tier,recentTpl); });
+    var out=[], usedTpl=[], i;
+    for(i=0;i<count;i++){
+      var cat=cats[i%cats.length], q=null, guard=0, strict=true;
+      while(!q && guard<80){
+        guard++;
+        if(guard>40) strict=false;
+        if(!bags[cat].length) bags[cat]=makeBag(cat,tier,recentTpl.concat(usedTpl));
+        var tp=bags[cat].shift();
+        for(var tries=0; tries<12 && !q; tries++){
+          var cand=null;
+          try{ cand=tp.fn(tier,sec); }catch(e){ cand=null; }
+          if(!cand || !cand.text) continue;
+          var key=questionKey(cand);
+          if(quiz[key] || (strict && hist[key])) continue;
+          cand.category=cat; cand.type=cand.type||'number'; cand.tpl=tp.id; cand.key=key;
+          q=cand;
+        }
+        if(q) usedTpl.push(tp.id);
+      }
+      if(!q) continue;
+      quiz[q.key]=1; out.push(q);
+    }
+    saveList(HISTORY_KEY, recentQ.concat(out.map(function(x){ return x.key; })), 800);
+    saveList(TPL_KEY, recentTpl.concat(usedTpl), 120);
+    return shuffle(out);
+  }
+  // ==== GENERATORS END ====
+
+
+  // ---------- app state & UI ----------
+  var state={ pupilName:'', className:'', yearIdx:1, strand:'mixed', sectionIdx:1, count:10, questions:[], answers:[], current:0, score:0, checked:false, selected:null, breakdown:{}, startTime:0, endTime:0 };
+
+  var pupilNameInput=document.getElementById('pupilName');
+  pupilNameInput.addEventListener('input', function(){
+    state.pupilName=pupilNameInput.value;
+    if(state.pupilName.trim()!==''){
+      pupilNameInput.classList.remove('input-error');
+      document.getElementById('nameError').hidden=true;
+    }
+  });
+  pupilNameInput.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){ e.preventDefault(); startQuiz(); }
+  });
+
+  function wireGroup(containerId, onSelect){
+    var el=document.getElementById(containerId);
+    var btns=el.querySelectorAll('.seg-btn');
+    btns.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        btns.forEach(function(b){ b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        onSelect(btn.getAttribute('data-value'));
+      });
+    });
+  }
+  wireGroup('classGroup', function(v){ state.className=v; document.getElementById('classError').hidden=true; });
+  wireGroup('yearGroup', function(v){ state.yearIdx=+v; });
+  wireGroup('strandGroup', function(v){ state.strand=v; });
+  wireGroup('sectionGroup', function(v){ state.sectionIdx=+v; });
+  wireGroup('countGroup', function(v){ state.count=+v; });
+
+  function showScreen(name){
+    ['setup','quiz','results'].forEach(function(s){
+      document.getElementById('screen-'+s).hidden = (s!==name);
+    });
+  }
+
+  function startQuiz(){
+    if(state.pupilName.trim()===''){
+      pupilNameInput.classList.add('input-error');
+      document.getElementById('nameError').hidden=false;
+      pupilNameInput.focus();
+      pupilNameInput.scrollIntoView({block:'center'});
+      return;
+    }
+    if(!state.className){
+      document.getElementById('classError').hidden=false;
+      document.getElementById('classGroup').scrollIntoView({block:'center'});
+      return;
+    }
+    state.questions=[];
+    state.questions=buildQuiz(state.strand, state.yearIdx, state.sectionIdx, state.count);
+    state.answers=new Array(state.questions.length).fill(null);
+    state.current=0; state.score=0;
+    state.breakdown={ number:{correct:0,total:0}, measures:{correct:0,total:0}, seag:{correct:0,total:0} };
+    state.startTime=Date.now();
+    document.getElementById('sectionBadge').textContent = 'Section '+['A','B','C'][state.sectionIdx]+' · P'+(5+state.yearIdx);
+    showScreen('quiz');
+    renderQuestion();
+  }
+
+  function goHome(){
+    var hasProgress = state.answers && state.answers.some(function(a){ return a!==null; });
+    if(hasProgress){
+      document.getElementById('confirmOverlay').hidden=false;
+    } else {
+      showScreen('setup');
+    }
+  }
+
+  function renderQuestion(){
+    var q=state.questions[state.current];
+    var prior=state.answers[state.current];
+    state.checked=!!prior; state.selected=prior?prior.given:null;
+    document.getElementById('qCounter').textContent = 'Question '+(state.current+1)+' of '+state.questions.length;
+    document.getElementById('scoreChip').textContent = 'Score: '+state.score;
+    document.getElementById('progressFill').style.width = ((state.current/state.questions.length)*100)+'%';
+    document.getElementById('qTag').textContent = categoryLabel(q.category)+' · '+q.tag;
+    document.getElementById('qText').textContent = q.text;
+    document.getElementById('qVisual').innerHTML = q.svg || '';
+
+    var prevBtn=document.getElementById('prevBtn');
+    prevBtn.disabled = state.current===0;
+
+    var answerArea=document.getElementById('qAnswerArea');
+    answerArea.innerHTML='';
+    if(q.type==='mc'){
+      var list=document.createElement('div'); list.className='mc-list';
+      q.choices.forEach(function(choiceText){
+        var b=document.createElement('button');
+        b.type='button'; b.className='mc-btn'; b.textContent=choiceText;
+        if(prior){
+          b.disabled=true;
+          if(choiceText===prior.given) b.classList.add('selected');
+        } else {
+          b.addEventListener('click', function(){
+            list.querySelectorAll('.mc-btn').forEach(function(x){ x.classList.remove('selected'); });
+            b.classList.add('selected');
+            state.selected=choiceText;
+          });
+        }
+        list.appendChild(b);
+      });
+      answerArea.appendChild(list);
+    } else {
+      var input=document.createElement('input');
+      input.type = 'text';
+      if(q.type!=='text'){ input.inputMode='decimal'; }
+      input.id='answerInput'; input.className='answer-input';
+      input.placeholder = q.type==='text' ? 'e.g. 12:45' : (q.money ? 'e.g. £4.50' : 'Your answer');
+      input.autocomplete='off';
+      if(prior){ input.value=prior.given; input.disabled=true; }
+      answerArea.appendChild(input);
+      if(!prior){ window.setTimeout(function(){ input.focus(); }, 0); }
+    }
+
+    var fb=document.getElementById('qFeedback');
+    if(prior){
+      showFeedback(prior.isCorrect,q);
+    } else {
+      fb.hidden=true;
+      fb.className='q-feedback';
+    }
+    document.getElementById('checkBtn').hidden=!!prior;
+    var nextBtn=document.getElementById('nextBtn');
+    nextBtn.hidden=!prior;
+    if(prior){ nextBtn.textContent = state.current===state.questions.length-1 ? 'See results' : 'Next question'; }
+  }
+
+  function showFeedback(isCorrect,q){
+    var fb=document.getElementById('qFeedback');
+    fb.hidden=false;
+    fb.className='q-feedback '+(isCorrect?'is-correct':'is-incorrect');
+    var titleText = isCorrect ? 'Correct' : ('Not quite — correct answer: '+formatAnswer(q));
+    fb.innerHTML = '<span class="fb-icon">'+(isCorrect?'✓':'✗')+'</span>'+
+      '<div><div class="fb-title">'+esc(titleText)+'</div><div class="fb-explain">'+esc(q.explanation)+'</div></div>';
+  }
+
+  function parseAnswerNumber(str){
+    var s=String(str).replace(/[\u2212\u2013\u2014]/g,'-').replace(/,/g,'').trim();
+    var fm=s.match(/(-?\d+)\s*\/\s*(\d+)/);
+    if(fm && Number(fm[2])!==0) return Number(fm[1])/Number(fm[2]);
+    var m=s.match(/-?\s?\d*\.?\d+/);
+    if(!m) return null;
+    var v=parseFloat(m[0].replace(/\s/g,''));
+    return isNaN(v)?null:v;
+  }
+
+  function checkAnswer(){
+    if(state.checked) return;
+    var q=state.questions[state.current], given, isCorrect;
+    if(q.type==='mc'){
+      if(state.selected==null) return;
+      given=state.selected; isCorrect = given===q.answer;
+    } else if(q.type==='text'){
+      var input=document.getElementById('answerInput');
+      given=input.value.trim();
+      if(given==='') return;
+      var norm=function(x){ return String(x).toLowerCase().replace(/\s+/g,'').replace(/[()\[\]]/g,'').replace(/[.!]$/,''); };
+      var okList=[q.answer].concat(q.accept||[]).map(norm);
+      isCorrect = okList.indexOf(norm(given))!==-1;
+    } else {
+      var input2=document.getElementById('answerInput');
+      given=input2.value.trim();
+      if(given==='') return;
+      var num=parseAnswerNumber(given);
+      isCorrect = num!==null && Math.abs(num-q.answer) < 1e-6;
+    }
+    state.checked=true;
+    if(isCorrect) state.score++;
+    var cat=state.breakdown[q.category]; cat.total++; if(isCorrect) cat.correct++;
+    state.answers[state.current]={ given:String(given), isCorrect:isCorrect };
+    showFeedback(isCorrect,q);
+    document.getElementById('scoreChip').textContent = 'Score: '+state.score;
+    document.getElementById('checkBtn').hidden=true;
+    var nextBtn=document.getElementById('nextBtn');
+    nextBtn.hidden=false;
+    nextBtn.textContent = state.current===state.questions.length-1 ? 'See results' : 'Next question';
+    if(q.type==='mc'){ document.querySelectorAll('.mc-btn').forEach(function(b){ b.disabled=true; }); }
+    else { var inp=document.getElementById('answerInput'); if(inp) inp.disabled=true; }
+  }
+
+  function previousQuestion(){
+    if(state.current===0) return;
+    state.current--;
+    renderQuestion();
+  }
+
+  function nextQuestion(){
+    state.current++;
+    if(state.current>=state.questions.length){
+      state.endTime=Date.now();
+      showScreen('results');
+      renderResults();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  var SCORE_LOG_URL = 'https://script.google.com/macros/s/AKfycbxItN9-jbmn7J58FLL3yaZ7h9xLmxGo_kVQMaQY8x7A1Th8sbeP19it1Ox5KYjP4fctRA/exec';
+
+  function logScoreToSheet(total,pct){
+    if(!SCORE_LOG_URL) return;
+    try{
+      var params={
+        name: state.pupilName.trim() || 'Pupil',
+        score: state.score,
+        total: total,
+        percent: pct,
+        year: 'P'+(5+state.yearIdx),
+        strand: state.strand==='mixed' ? 'Mixed Review' : categoryLabel(state.strand),
+        section: ['A','B','C'][state.sectionIdx],
+        class: state.className || ''
+      };
+      var qs=Object.keys(params).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }).join('&');
+      var beacon=new Image();
+      beacon.src=SCORE_LOG_URL+'?'+qs;
+    }catch(err){}
+  }
+
+  function renderResults(){
+    var total=state.questions.length;
+    document.getElementById('scoreStamp').textContent = state.score+' / '+total;
+    var pct=Math.round((state.score/total)*100);
+    logScoreToSheet(total,pct);
+    var elapsedSec=Math.round((state.endTime-state.startTime)/1000);
+    var mm=Math.floor(elapsedSec/60), ss=elapsedSec%60;
+    document.getElementById('scoreSub').textContent = pct+'% correct · finished in '+mm+':'+String(ss).padStart(2,'0');
+
+    var focusLabel = state.strand==='mixed' ? 'Mixed Review' : categoryLabel(state.strand);
+    var dateStr = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    document.getElementById('teacherName').textContent = state.pupilName.trim() || 'Pupil';
+    document.getElementById('teacherScoreLine').textContent = state.score+'/'+total+' ('+pct+'%)';
+    document.getElementById('teacherMeta').textContent = (state.className ? state.className+' · ' : '')+focusLabel+' · Section '+['A','B','C'][state.sectionIdx]+' · P'+(5+state.yearIdx)+' · '+dateStr;
+
+    var breakdownEl=document.getElementById('breakdown'); breakdownEl.innerHTML='';
+    ['number','measures','seag'].forEach(function(cat){
+      var d=state.breakdown[cat];
+      if(!d || d.total===0) return;
+      var pctCat=Math.round((d.correct/d.total)*100);
+      var row=document.createElement('div'); row.className='bd-row';
+      row.innerHTML = '<div class="bd-label">'+categoryLabel(cat)+'</div>'+
+        '<div class="bd-track"><div class="bd-fill" style="width:'+pctCat+'%"></div></div>'+
+        '<div class="bd-frac">'+d.correct+'/'+d.total+'</div>';
+      breakdownEl.appendChild(row);
+    });
+
+    var missed=[];
+    state.answers.forEach(function(a,i){
+      if(a && !a.isCorrect) missed.push({ q:state.questions[i], given:a.given });
+    });
+
+    var reviewEl=document.getElementById('reviewSection'); reviewEl.innerHTML='';
+    if(missed.length===0){
+      reviewEl.innerHTML='<div class="review-perfect">Full marks — nothing to review this time.</div>';
+    } else {
+      var heading=document.createElement('div'); heading.className='review-heading'; heading.textContent='Questions to review';
+      reviewEl.appendChild(heading);
+      missed.forEach(function(m){
+        var item=document.createElement('div'); item.className='review-item';
+        item.innerHTML = '<div class="review-q">'+esc(m.q.text)+'</div>'+
+          '<div class="review-given">Your answer: '+esc(m.given||'—')+'</div>'+
+          '<div class="review-correct">Correct answer: '+esc(formatAnswer(m.q))+'</div>'+
+          '<div class="review-explain">'+esc(m.q.explanation)+'</div>';
+        reviewEl.appendChild(item);
+      });
+    }
+  }
+
+  document.getElementById('startBtn').addEventListener('click', startQuiz);
+  document.getElementById('checkBtn').addEventListener('click', checkAnswer);
+  document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+  document.getElementById('prevBtn').addEventListener('click', previousQuestion);
+  document.getElementById('homeBtn').addEventListener('click', goHome);
+  document.getElementById('confirmCancel').addEventListener('click', function(){
+    document.getElementById('confirmOverlay').hidden=true;
+  });
+  document.getElementById('confirmLeave').addEventListener('click', function(){
+    document.getElementById('confirmOverlay').hidden=true;
+    showScreen('setup');
+  });
+  document.getElementById('retryBtn').addEventListener('click', startQuiz);
+  document.getElementById('newSetupBtn').addEventListener('click', function(){ showScreen('setup'); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Enter' && !document.getElementById('screen-quiz').hidden){
+      e.preventDefault();
+      if(!state.checked) checkAnswer(); else nextQuestion();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
